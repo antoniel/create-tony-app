@@ -1,0 +1,10 @@
+*.log
+.DS_Store
+node_modules
+dist
+tester
+tester-react
+package-lock.json
+tsconfig.tsbuildinfo
+# Local Netlify folder
+.netlify
