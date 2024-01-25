@@ -1,9 +1,9 @@
 import basicTemplate from './basic';
-import { reactViteTailwind } from './react-vite-tailwind';
+import { reactTailwind } from './react-tailwind';
 
 export const templates = {
   basic: basicTemplate,
-  "react-vite-tailwind": reactViteTailwind
+  "react-tailwind": reactTailwind
 } as const;
 
 export type TemplatesName = keyof typeof templates;

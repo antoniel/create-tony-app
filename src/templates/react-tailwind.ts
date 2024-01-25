@@ -1,6 +1,6 @@
 import { Template } from './template';
 
-export const reactViteTailwind: Template = {
+export const reactTailwind: Template = {
   name: 'basic',
   dependencies: ['@heroicons/react', 'react', 'react-dom'],
   packageJson: {

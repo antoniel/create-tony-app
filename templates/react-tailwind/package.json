@@ -1,0 +1,79 @@
+{
+  "name": "vital",
+  "version": "1.0.0",
+  "description": "Starter template for Vite with React (TypeScript). Supports Tailwind. Vitest and @react/testing-library configured and ready to go. Also ESLint, Prettier, Husky, Commit-lint and Atomic Design for components.",
+  "homepage": "https://github.com/jvidalv/vital#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jvidalv/vital.git"
+  },
+  "author": "Josep Vidal <josepvidalvidal@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jvidalv/vital/issues"
+  },
+  "keywords": [
+    "react",
+    "vite",
+    "typescript",
+    "vitest",
+    "tailwind",
+    "template",
+    "starter",
+    "eslint",
+    "prettier",
+    "husky",
+    "commit-lint"
+  ],
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not IE 11"
+  ],
+  "engines": {
+    "node": ">=14",
+    "yarn": ">=1.22.5"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "postinstall": "husky install"
+  },
+  "dependencies": {
+    "@heroicons/react": "2.1.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "18.5.0",
+    "@commitlint/config-conventional": "18.5.0",
+    "@tailwindcss/forms": "0.5.7",
+    "@testing-library/jest-dom": "^6.3.0",
+    "@testing-library/react": "14.1.2",
+    "@types/node": "20.11.6",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "10.4.17",
+    "eslint": "^8.56.0",
+    "eslint-plugin-import": "2.29.1",
+    "eslint-plugin-react": "7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "happy-dom": "^13.3.1",
+    "husky": "9.0.1",
+    "lint-staged": "15.2.0",
+    "postcss": "8.4.33",
+    "prettier": "3.2.4",
+    "tailwindcss": "3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vite-preset-react": "2.3.0",
+    "vitest": "^1.2.1"
+  }
+}
