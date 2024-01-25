@@ -1,5 +1,6 @@
-import execa from 'execa';
+import { $ } from 'execa';
 
+const $$ = $({stdio: 'inherit'});
 let cachedCmd: InstallCommand;
 
 export type InstallCommand = 'yarn' | 'npm' | 'pnpm';
@@ -24,7 +25,7 @@ export default async function getInstallCmd(): Promise<InstallCommand> {
 }
 const checkYarn = async () => {
   try {
-    await execa('yarnpkg', ['--version']);
+    await $$`yarn --version`;
     return true;
   } catch (e) {}
   return false;
@@ -32,7 +33,7 @@ const checkYarn = async () => {
 
 const checkPnpm = async () => {
   try {
-    await execa('pnpm', ['--version']);
+    await $$`pnpm --version`;
     return true;
   } catch (e) {}
   return false;

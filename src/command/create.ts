@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { Input, Select } from 'enquirer';
-import execa from 'execa';
+import { $ } from 'execa';
 import * as fs from 'fs-extra';
 import ora, { Ora } from 'ora';
 import path from 'path';
@@ -9,11 +9,12 @@ import getInstallArgs from '../getInstallArgs';
 import getInstallCmd from '../getInstallCmd';
 import logError from '../logError';
 import * as Messages from '../messages';
-import { TemplatesName, getTemplateConfig, templates } from '../templates';
+import { getTemplateConfig, templates, TemplatesName } from '../templates';
 import { Template } from '../templates/template';
 import { composePackageJson } from '../templates/utils';
 import { safePackageName } from '../utils';
 
+const $$ = $({stdio: 'inherit'});
 export const create = async (pkg: string) => {
   logBrand();
   const template = await askSelectTemplate();
@@ -57,7 +58,7 @@ async function installDependencies(templateConfig: Template, pkg: string) {
   ).start();
   try {
     const cmd = await getInstallCmd();
-    await execa(cmd, getInstallArgs(cmd, templateConfig.dependencies));
+    await $$`${cmd} ${getInstallArgs(cmd, templateConfig.dependencies)}`;
     installSpinner.succeed('Installed dependencies');
     console.log(await Messages.start(pkg));
   } catch (error) {
