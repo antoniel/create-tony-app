@@ -1,12 +1,25 @@
 # Create Tony App 🚀
 
-Welcome to Create Tony App – your ticket to hassle-free app creation!
+```
+:::::::::   ::::::::  :::     :::  ::      :::
+  :+:     :+:    :+:  :+:+    :+:  :+:    :+:
+  +:+     +:+    +:+  +:+ +:  +:+   +:+  +:+
+  +#+     +#+    +:+  +#:  :+:+#+    +#++:+    😁
+  +#+     +#+    +#+  +#+     +#+     +#+
+  #+#     #+#    #+#  #+#     #+#     #+#
+  ###     #########   ###     ###    ###
+```
+
+Just run `create-tony-app` and you're ready to go!
 
 ## Installation
 
-Get started with this incredible tool:
+Don't install anything, just run the following command:
 
 ```sh
-npm install -g create-tony-app
+npx create-tony-app YOUR_APP_NAME
 # or
-yarn global add create-tony-app# create-tony-app
+yarn create tony-app YOUR_APP_NAME
+# or
+bun create tony-app YOUR_APP_NAME
+```

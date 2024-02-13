@@ -1,9 +1,9 @@
 {
   "files.exclude": {},
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.fixAll": true,
-    "source.sortImports": false,
-    "source.organizeImports": true
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll": "explicit",
+    "source.sortImports": "never",
+    "source.organizeImports": "explicit"
   }
 }
