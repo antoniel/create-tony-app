@@ -13,12 +13,28 @@ yarn create tony-app
 The interactive tree currently offers:
 
 ```text
-apps/
-  web/       TanStack Start + React Query + Chakra UI
-  api/       Elysia
-packages/
-  database/  Drizzle + PostgreSQL
+? Compose my-app
+
+  my-app/
+  ├─ apps/
+  │  ├─ ● web/
+❯ │  └─ ○ api/
+  └─ packages/
+     └─ ● database/
+
+  ╭─ apps/api ─────────────────────────────╮
+  │ Elysia · typed HTTP API                │
+  ╰────────────────────────────────────────╯
+
+  2 of 3 folders selected
+  Space toggle · Enter create
 ```
+
+The details panel follows the focused folder:
+
+- `apps/web` — TanStack Start · React Query · Chakra UI
+- `apps/api` — Elysia · typed HTTP API
+- `packages/database` — Drizzle · PostgreSQL
 
 Selecting `packages/database` adds a root `docker-compose.yml` with PostgreSQL, a healthcheck, and persistent named volume. The generated `.env.example` matches its credentials, database, and port. Use `bun run db:up`, `bun run db:down`, and `bun run db:logs` for Docker, plus `bun run db:generate`, `bun run db:migrate`, `bun run db:push`, and `bun run db:studio` for Drizzle. No seed command is generated.
 

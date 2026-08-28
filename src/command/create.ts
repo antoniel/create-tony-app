@@ -1,12 +1,10 @@
 import chalk from 'chalk';
-import { Input, MultiSelect } from 'enquirer';
+import { Input } from 'enquirer';
 import execa from 'execa';
 import * as fs from 'fs-extra';
 import ora from 'ora';
 import path from 'path';
-
-const FEATURES = ['web', 'api', 'database'] as const;
-type Feature = (typeof FEATURES)[number];
+import { promptComposeTree, type Feature } from './compose-tree';
 
 interface ProjectSelection {
   projectName: string;
@@ -50,21 +48,6 @@ async function askProjectSelection(projectName?: string): Promise<ProjectSelecti
     validate: (value: string) => value.trim().length > 0 || 'Enter a project name',
   }).run());
 
-  const selectedFeatures = (await new MultiSelect({
-    name: 'features',
-    message: 'Select the folders to create',
-    hint: 'Space to toggle · Enter to create',
-    initial: ['web', 'api', 'database'],
-    choices: [
-      { role: 'separator', message: chalk.dim('apps/') },
-      { name: 'web', message: '  web/       TanStack Start + React Query + Chakra UI', enabled: true },
-      { name: 'api', message: '  api/       Elysia', enabled: true },
-      { role: 'separator', message: chalk.dim('packages/') },
-      { name: 'database', message: '  database/  Drizzle + PostgreSQL', enabled: true },
-    ],
-    validate: (value: string[]) => value.length > 0 || 'Select at least one folder',
-  }).run()) as string[];
-
   const safeName = toPackageName(name);
   if (!safeName) {
     throw new Error('Project name must contain letters or numbers.');
@@ -72,9 +55,7 @@ async function askProjectSelection(projectName?: string): Promise<ProjectSelecti
 
   return {
     projectName: safeName,
-    features: selectedFeatures.filter((feature): feature is Feature =>
-      FEATURES.includes(feature as Feature)
-    ),
+    features: await promptComposeTree(safeName),
   };
 }
 
