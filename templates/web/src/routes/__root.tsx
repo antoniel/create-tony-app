@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query'
+import { Box, Container, Flex, Link as ChakraLink, Text } from '@chakra-ui/react'
 import {
   HeadContent,
   Link,
@@ -6,7 +7,7 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import '../styles.css'
+import { Provider } from '../components/ui/provider'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -25,9 +26,18 @@ export const Route = createRootRouteWithContext<{
 function RootComponent() {
   return (
     <>
-      <header>
-        <Link to="/">Tony App</Link>
-      </header>
+      <Box as="header" borderBottomWidth="1px" borderColor="app.border">
+        <Container maxW="6xl" py="4">
+          <Flex align="center" justify="space-between">
+            <ChakraLink asChild colorPalette="brand" fontWeight="bold">
+              <Link to="/">Tony App</Link>
+            </ChakraLink>
+            <Text color="fg.muted" fontSize="sm">
+              Bun · Turborepo · TanStack Start
+            </Text>
+          </Flex>
+        </Container>
+      </Box>
       <Outlet />
     </>
   )
@@ -35,12 +45,12 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <Provider>{children}</Provider>
         <Scripts />
       </body>
     </html>

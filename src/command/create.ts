@@ -57,7 +57,7 @@ async function askProjectSelection(projectName?: string): Promise<ProjectSelecti
     initial: ['web', 'api', 'database'],
     choices: [
       { role: 'separator', message: chalk.dim('apps/') },
-      { name: 'web', message: '  web/       TanStack Start + React Query', enabled: true },
+      { name: 'web', message: '  web/       TanStack Start + React Query + Chakra UI', enabled: true },
       { name: 'api', message: '  api/       Elysia', enabled: true },
       { role: 'separator', message: chalk.dim('packages/') },
       { name: 'database', message: '  database/  Drizzle + PostgreSQL', enabled: true },
@@ -96,6 +96,18 @@ async function generateProject(projectPath: string, selection: ProjectSelection)
 }
 
 async function writeRootPackageJson(projectPath: string, selection: ProjectSelection) {
+  const databaseScripts = selection.features.includes('database')
+    ? {
+        'db:up': 'docker compose up -d --wait',
+        'db:down': 'docker compose down',
+        'db:logs': 'docker compose logs -f postgres',
+        'db:generate': 'bun run --filter @app/database db:generate',
+        'db:migrate': 'bun run --filter @app/database db:migrate',
+        'db:push': 'bun run --filter @app/database db:push',
+        'db:studio': 'bun run --filter @app/database db:studio',
+      }
+    : {};
+
   await fs.outputJSON(path.join(projectPath, 'package.json'), {
     name: selection.projectName,
     private: true,
@@ -108,6 +120,7 @@ async function writeRootPackageJson(projectPath: string, selection: ProjectSelec
       format: 'oxfmt --write .',
       'format:check': 'oxfmt --check .',
       typecheck: 'turbo typecheck',
+      ...databaseScripts,
     },
     devDependencies: {
       '@types/bun': '^1.3.10',
@@ -124,7 +137,11 @@ async function writeFeaturePackageJson(projectPath: string, selection: ProjectSe
   const selected = new Set(selection.features);
 
   if (selected.has('web')) {
-    await fs.outputJSON(path.join(projectPath, 'apps/web/package.json'), webPackageJson(), { spaces: 2 });
+    await fs.outputJSON(
+      path.join(projectPath, 'apps/web/package.json'),
+      webPackageJson(selected.has('api')),
+      { spaces: 2 }
+    );
   }
 
   if (selected.has('api')) {
@@ -144,21 +161,75 @@ async function writeConditionalFiles(projectPath: string, features: Feature[]) {
       path.join(projectPath, 'packages/database/.env.example'),
       path.join(projectPath, '.env.example')
     );
+    await fs.move(
+      path.join(projectPath, 'packages/database/docker-compose.yml'),
+      path.join(projectPath, 'docker-compose.yml')
+    );
+    await appendDatabaseReadme(projectPath);
   }
 
   if (selected.has('api')) {
-    const source = selected.has('database') ? 'index.with-database.ts' : 'index.standalone.ts';
-    const sourcePath = path.join(projectPath, 'apps/api/src', source);
-    await fs.move(sourcePath, path.join(projectPath, 'apps/api/src/index.ts'));
-    await fs.remove(path.join(projectPath, 'apps/api/src', selected.has('database') ? 'index.standalone.ts' : 'index.with-database.ts'));
+    const source = selected.has('database')
+      ? 'app.with-database.ts'
+      : 'app.standalone.ts';
+    const apiSourcePath = path.join(projectPath, 'apps/api/src');
+
+    await fs.move(
+      path.join(apiSourcePath, source),
+      path.join(apiSourcePath, 'app.ts')
+    );
+    await fs.remove(
+      path.join(
+        apiSourcePath,
+        selected.has('database')
+          ? 'app.standalone.ts'
+          : 'app.with-database.ts'
+      )
+    );
+
+    if (!selected.has('database')) {
+      await fs.remove(path.join(apiSourcePath, 'modules/users'));
+    }
   }
 
   if (selected.has('web')) {
     const source = selected.has('api') ? 'index.with-api.tsx' : 'index.standalone.tsx';
-    const routesPath = path.join(projectPath, 'apps/web/src/routes');
+    const webSourcePath = path.join(projectPath, 'apps/web/src');
+    const routesPath = path.join(webSourcePath, 'routes');
     await fs.move(path.join(routesPath, source), path.join(routesPath, 'index.tsx'));
     await fs.remove(path.join(routesPath, selected.has('api') ? 'index.standalone.tsx' : 'index.with-api.tsx'));
+
+    if (!selected.has('api')) {
+      await fs.remove(path.join(webSourcePath, 'lib'));
+      await fs.remove(path.join(webSourcePath, 'modules'));
+    } else if (!selected.has('database')) {
+      await fs.remove(path.join(webSourcePath, 'modules/users'));
+    }
   }
+}
+
+async function appendDatabaseReadme(projectPath: string) {
+  await fs.appendFile(
+    path.join(projectPath, 'README.md'),
+    `
+## Database
+
+Copy \`.env.example\` to \`.env\`. The defaults match the generated PostgreSQL Compose service.
+
+Start and stop PostgreSQL from the workspace root:
+
+- \`bun run db:up\` — start PostgreSQL and wait for its healthcheck
+- \`bun run db:down\` — stop PostgreSQL
+- \`bun run db:logs\` — follow PostgreSQL logs
+
+Run Drizzle from the workspace root:
+
+- \`bun run db:generate\` — generate migrations from the schema
+- \`bun run db:migrate\` — apply generated migrations
+- \`bun run db:push\` — push schema changes directly
+- \`bun run db:studio\` — open Drizzle Studio
+`
+  );
 }
 
 async function renameGitIgnoreFiles(projectPath: string) {
@@ -172,7 +243,7 @@ function templatePath(name: string) {
   return path.resolve(__dirname, `../../templates/${name}`);
 }
 
-function webPackageJson() {
+function webPackageJson(withApi: boolean) {
   return {
     name: '@app/web',
     private: true,
@@ -185,15 +256,23 @@ function webPackageJson() {
       typecheck: 'tsr generate && tsc --noEmit',
     },
     dependencies: {
+      ...(withApi ? { '@elysia/eden': '^1.4.10' } : {}),
+      '@chakra-ui/react': '^3.36.1',
+      '@emotion/react': '^11.14.0',
       '@tanstack/react-query': '^5.102.8',
       '@tanstack/react-router': '^1.170.32',
       '@tanstack/react-router-with-query': '^1.130.17',
       '@tanstack/react-start': '^1.168.49',
       nitro: '3.0.260610-beta',
+      'next-themes': '^0.4.6',
+      nuqs: '^2.10.1',
       react: '^19.2.0',
       'react-dom': '^19.2.0',
     },
     devDependencies: {
+      ...(withApi
+        ? { '@app/api': 'workspace:*', elysia: '^1.4.30' }
+        : {}),
       '@tanstack/router-cli': '^1.167.33',
       '@types/react': '^19.2.0',
       '@types/react-dom': '^19.2.0',
@@ -208,6 +287,7 @@ function apiPackageJson(withDatabase: boolean) {
     name: '@app/api',
     private: true,
     type: 'module',
+    exports: { '.': './src/app.ts' },
     scripts: {
       dev: 'bun --env-file=../../.env --watch src/index.ts',
       build: 'bun build src/index.ts --target bun --outdir dist',
@@ -261,7 +341,9 @@ function printNextSteps(projectName: string, features: Feature[]) {
   console.log(`\n  ${chalk.dim('$')} cd ${projectName}`);
   console.log(`  ${chalk.dim('$')} bun dev`);
   if (features.includes('database')) {
-    console.log(`\n  Copy ${chalk.cyan('.env.example')} to ${chalk.cyan('.env')} and set DATABASE_URL.`);
+    console.log(`\n  Copy ${chalk.cyan('.env.example')} to ${chalk.cyan('.env')}.`);
+    console.log(`  Run ${chalk.cyan('bun run db:up')} to start PostgreSQL.`);
+    console.log(`  Then run ${chalk.cyan('bun run db:push')} to apply the schema.`);
   }
   console.log();
 }
