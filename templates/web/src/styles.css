@@ -1,0 +1,14 @@
+:root {
+  color: #171717;
+  background: #f7f7f5;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+header { padding: 1.5rem 2rem; }
+a { color: inherit; font-weight: 700; text-decoration: none; }
+main { max-width: 50rem; margin: 15vh auto; padding: 2rem; }
+h1 { max-width: 14ch; font-size: clamp(2.5rem, 8vw, 5rem); line-height: 0.95; margin: 0.5rem 0 1.5rem; }
+p { color: #555; font-size: 1.125rem; }
+.eyebrow { color: #6d28d9; font-family: monospace; font-weight: 700; }

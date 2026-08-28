@@ -1,200 +1,271 @@
 import chalk from 'chalk';
-import { Input, Select } from 'enquirer';
+import { Input, MultiSelect } from 'enquirer';
 import execa from 'execa';
 import * as fs from 'fs-extra';
-import ora, { Ora } from 'ora';
+import ora from 'ora';
 import path from 'path';
-import shell from 'shelljs';
-import getInstallArgs from '../getInstallArgs';
-import getInstallCmd from '../getInstallCmd';
-import logError from '../logError';
-import * as Messages from '../messages';
-import { TemplatesName, getTemplateConfig, templates } from '../templates';
-import { Template } from '../templates/template';
-import { composePackageJson } from '../templates/utils';
-import { safePackageName } from '../utils';
 
-export const create = async (pkg: string) => {
-  logBrand();
-  const template = await askSelectTemplate();
-  const templateConfig = getTemplateConfig(template);
-  await copyTemplates(template, templateConfig, pkg);
-  await installDependencies(templateConfig, pkg);
-};
+const FEATURES = ['web', 'api', 'database'] as const;
+type Feature = (typeof FEATURES)[number];
 
-async function copyTemplates(
-  template: string,
-  templateConfig: Template,
-  pkg: string
-) {
-  const bootSpinner = ora(`Creating ${chalk.bold.green(pkg)}...`);
-  const projectPath = await getProjectPath(pkg, bootSpinner);
+interface ProjectSelection {
+  projectName: string;
+  features: Feature[];
+}
+
+export async function create(projectName?: string) {
+  printBrand();
+
+  const selection = await askProjectSelection(projectName);
+  const projectPath = path.resolve(process.cwd(), selection.projectName);
+
+  if (await fs.pathExists(projectPath)) {
+    throw new Error(`The folder ${chalk.bold(selection.projectName)} already exists.`);
+  }
+
+  const spinner = ora(`Creating ${chalk.bold.green(selection.projectName)}...`).start();
+
   try {
-    bootSpinner.start();
-    await fs.copy(
-      path.resolve(__dirname, `../../templates/${template}`),
-      projectPath,
-      {
-        overwrite: true,
-      }
+    await generateProject(projectPath, selection);
+    spinner.text = 'Installing dependencies with Bun...';
+    await execa('bun', ['install'], { cwd: projectPath });
+    spinner.text = 'Formatting the generated project...';
+    await execa('bun', ['run', 'format'], { cwd: projectPath });
+    spinner.succeed(`Created ${chalk.bold.green(selection.projectName)}`);
+  } catch (error) {
+    spinner.fail('Failed to create project');
+    await fs.remove(projectPath);
+    throw error;
+  }
+
+  printNextSteps(selection.projectName, selection.features);
+}
+
+async function askProjectSelection(projectName?: string): Promise<ProjectSelection> {
+  const name = projectName?.trim() || (await new Input({
+    name: 'projectName',
+    message: 'Project name',
+    initial: 'my-app',
+    result: (value: string) => value.trim(),
+    validate: (value: string) => value.trim().length > 0 || 'Enter a project name',
+  }).run());
+
+  const selectedFeatures = (await new MultiSelect({
+    name: 'features',
+    message: 'Select the folders to create',
+    hint: 'Space to toggle · Enter to create',
+    initial: ['web', 'api', 'database'],
+    choices: [
+      { role: 'separator', message: chalk.dim('apps/') },
+      { name: 'web', message: '  web/       TanStack Start + React Query', enabled: true },
+      { name: 'api', message: '  api/       Elysia', enabled: true },
+      { role: 'separator', message: chalk.dim('packages/') },
+      { name: 'database', message: '  database/  Drizzle + PostgreSQL', enabled: true },
+    ],
+    validate: (value: string[]) => value.length > 0 || 'Select at least one folder',
+  }).run()) as string[];
+
+  const safeName = toPackageName(name);
+  if (!safeName) {
+    throw new Error('Project name must contain letters or numbers.');
+  }
+
+  return {
+    projectName: safeName,
+    features: selectedFeatures.filter((feature): feature is Feature =>
+      FEATURES.includes(feature as Feature)
+    ),
+  };
+}
+
+async function generateProject(projectPath: string, selection: ProjectSelection) {
+  await fs.ensureDir(projectPath);
+  await fs.copy(templatePath('root'), projectPath);
+
+  for (const feature of selection.features) {
+    const destination = feature === 'database'
+      ? path.join(projectPath, 'packages/database')
+      : path.join(projectPath, `apps/${feature}`);
+    await fs.copy(templatePath(feature), destination);
+  }
+
+  await writeRootPackageJson(projectPath, selection);
+  await writeFeaturePackageJson(projectPath, selection);
+  await writeConditionalFiles(projectPath, selection.features);
+  await renameGitIgnoreFiles(projectPath);
+}
+
+async function writeRootPackageJson(projectPath: string, selection: ProjectSelection) {
+  await fs.outputJSON(path.join(projectPath, 'package.json'), {
+    name: selection.projectName,
+    private: true,
+    packageManager: 'bun@1.3.14',
+    workspaces: ['apps/*', 'packages/*'],
+    scripts: {
+      dev: 'turbo dev',
+      build: 'turbo build',
+      lint: 'turbo lint',
+      format: 'oxfmt --write .',
+      'format:check': 'oxfmt --check .',
+      typecheck: 'turbo typecheck',
+    },
+    devDependencies: {
+      '@types/bun': '^1.3.10',
+      '@types/node': '^22.10.2',
+      oxfmt: '^0.65.0',
+      oxlint: '^1.80.0',
+      turbo: '^2.10.12',
+      typescript: '^5.7.3',
+    },
+  }, { spaces: 2 });
+}
+
+async function writeFeaturePackageJson(projectPath: string, selection: ProjectSelection) {
+  const selected = new Set(selection.features);
+
+  if (selected.has('web')) {
+    await fs.outputJSON(path.join(projectPath, 'apps/web/package.json'), webPackageJson(), { spaces: 2 });
+  }
+
+  if (selected.has('api')) {
+    await fs.outputJSON(path.join(projectPath, 'apps/api/package.json'), apiPackageJson(selected.has('database')), { spaces: 2 });
+  }
+
+  if (selected.has('database')) {
+    await fs.outputJSON(path.join(projectPath, 'packages/database/package.json'), databasePackageJson(), { spaces: 2 });
+  }
+}
+
+async function writeConditionalFiles(projectPath: string, features: Feature[]) {
+  const selected = new Set(features);
+
+  if (selected.has('database')) {
+    await fs.move(
+      path.join(projectPath, 'packages/database/.env.example'),
+      path.join(projectPath, '.env.example')
     );
-    await fixGitIgnore(projectPath);
-    let { author } = await updateLicenseYearAndAuthor(projectPath, bootSpinner);
+  }
 
-    await writePackageJson(templateConfig, projectPath, pkg, author);
-    bootSpinner.succeed(`Created ${chalk.bold.green(pkg)}`);
-    await Messages.start(pkg);
-  } catch (error) {
-    bootSpinner.fail(`Failed to create ${chalk.bold.red(pkg)}`);
-    logError(error);
-    process.exit(1);
+  if (selected.has('api')) {
+    const source = selected.has('database') ? 'index.with-database.ts' : 'index.standalone.ts';
+    const sourcePath = path.join(projectPath, 'apps/api/src', source);
+    await fs.move(sourcePath, path.join(projectPath, 'apps/api/src/index.ts'));
+    await fs.remove(path.join(projectPath, 'apps/api/src', selected.has('database') ? 'index.standalone.ts' : 'index.with-database.ts'));
+  }
+
+  if (selected.has('web')) {
+    const source = selected.has('api') ? 'index.with-api.tsx' : 'index.standalone.tsx';
+    const routesPath = path.join(projectPath, 'apps/web/src/routes');
+    await fs.move(path.join(routesPath, source), path.join(routesPath, 'index.tsx'));
+    await fs.remove(path.join(routesPath, selected.has('api') ? 'index.standalone.tsx' : 'index.with-api.tsx'));
   }
 }
 
-async function installDependencies(templateConfig: Template, pkg: string) {
-  const installSpinner = ora(
-    Messages.installing(templateConfig.dependencies.sort())
-  ).start();
-  try {
-    const cmd = await getInstallCmd();
-    await execa(cmd, getInstallArgs(cmd, templateConfig.dependencies));
-    installSpinner.succeed('Installed dependencies');
-    console.log(await Messages.start(pkg));
-  } catch (error) {
-    installSpinner.fail('Failed to install dependencies');
-    logError(error);
-    process.exit(1);
+async function renameGitIgnoreFiles(projectPath: string) {
+  const files = await fs.readdir(projectPath);
+  if (files.includes('gitignore')) {
+    await fs.move(path.join(projectPath, 'gitignore'), path.join(projectPath, '.gitignore'));
   }
 }
 
-async function writePackageJson(
-  templateConfig: Template,
-  projectPath: string,
-  pkg: string,
-  author: string
-) {
-  const generatePackageJson = composePackageJson(templateConfig);
-  changeNodeProcessDirectory(projectPath);
-  const pkgJson = generatePackageJson({ name: safePackageName(pkg), author });
-  await fs.outputJSON(path.resolve(projectPath, 'package.json'), pkgJson);
+function templatePath(name: string) {
+  return path.resolve(__dirname, `../../templates/${name}`);
 }
 
-function changeNodeProcessDirectory(projectPath: string) {
-  process.chdir(projectPath);
+function webPackageJson() {
+  return {
+    name: '@app/web',
+    private: true,
+    type: 'module',
+    scripts: {
+      dev: 'vite dev --port 3000',
+      build: 'vite build',
+      'generate-routes': 'tsr generate',
+      lint: 'oxlint .',
+      typecheck: 'tsr generate && tsc --noEmit',
+    },
+    dependencies: {
+      '@tanstack/react-query': '^5.102.8',
+      '@tanstack/react-router': '^1.170.32',
+      '@tanstack/react-router-with-query': '^1.130.17',
+      '@tanstack/react-start': '^1.168.49',
+      nitro: '3.0.260610-beta',
+      react: '^19.2.0',
+      'react-dom': '^19.2.0',
+    },
+    devDependencies: {
+      '@tanstack/router-cli': '^1.167.33',
+      '@types/react': '^19.2.0',
+      '@types/react-dom': '^19.2.0',
+      '@vitejs/plugin-react': '^6.1.0',
+      vite: '^8.2.2',
+    },
+  };
 }
 
-async function updateLicenseYearAndAuthor(
-  projectPath: string,
-  bootSpinner: Ora
-) {
-  let license: string = await fs.readFile(
-    path.resolve(projectPath, 'LICENSE'),
-    { encoding: 'utf-8' }
-  );
+function apiPackageJson(withDatabase: boolean) {
+  return {
+    name: '@app/api',
+    private: true,
+    type: 'module',
+    scripts: {
+      dev: 'bun --env-file=../../.env --watch src/index.ts',
+      build: 'bun build src/index.ts --target bun --outdir dist',
+      start: 'bun --env-file=../../.env dist/index.js',
+      lint: 'oxlint .',
+      typecheck: 'tsc --noEmit',
+    },
+    dependencies: {
+      ...(withDatabase ? { '@app/database': 'workspace:*' } : {}),
+      '@elysiajs/cors': '^1.4.1',
+      elysia: '^1.4.30',
+    },
+    devDependencies: {},
+  };
+}
 
-  license = license.replace(/<year>/, `${new Date().getFullYear()}`);
+function databasePackageJson() {
+  return {
+    name: '@app/database',
+    private: true,
+    type: 'module',
+    exports: { '.': './src/index.ts', './schema': './src/schema.ts' },
+    scripts: {
+      build: 'bun build src/index.ts --target bun --outdir dist',
+      lint: 'oxlint .',
+      typecheck: 'tsc --noEmit',
+      'db:generate': 'bun --env-file=../../.env x drizzle-kit generate',
+      'db:migrate': 'bun --env-file=../../.env x drizzle-kit migrate',
+      'db:push': 'bun --env-file=../../.env x drizzle-kit push',
+      'db:studio': 'bun --env-file=../../.env x drizzle-kit studio',
+    },
+    dependencies: {
+      'drizzle-orm': '^0.45.2',
+      postgres: '^3.4.8',
+    },
+    devDependencies: {
+      'drizzle-kit': '^0.31.10',
+    },
+  };
+}
 
-  // attempt to automatically derive author name
-  let author = getAuthorName();
+function toPackageName(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
-  if (!author) {
-    bootSpinner.stop();
-    const licenseInput = new Input({
-      name: 'author',
-      message: 'Who is the package author?',
-    });
-    author = await licenseInput.run();
-    setAuthorName(author);
-    bootSpinner.start();
+function printNextSteps(projectName: string, features: Feature[]) {
+  console.log(`\n  ${chalk.dim('$')} cd ${projectName}`);
+  console.log(`  ${chalk.dim('$')} bun dev`);
+  if (features.includes('database')) {
+    console.log(`\n  Copy ${chalk.cyan('.env.example')} to ${chalk.cyan('.env')} and set DATABASE_URL.`);
   }
-
-  license = license.replace(/<author>/, author.trim());
-
-  await fs.writeFile(path.resolve(projectPath, 'LICENSE'), license, {
-    encoding: 'utf-8',
-  });
-  return { license, author };
-}
-async function fixGitIgnore(projectPath: string) {
-  await fs.move(
-    path.resolve(projectPath, './gitignore'),
-    path.resolve(projectPath, './.gitignore')
-  );
+  console.log();
 }
 
-async function askSelectTemplate(): Promise<TemplatesName> {
-  return await new Select({
-    message: 'Choose a template',
-    choices: Object.keys(templates),
-  }).run();
+function printBrand() {
+  console.log(chalk.blue.bold('\n  Create Tony App\n'));
 }
-
-function getAuthorName() {
-  let author = '';
-
-  author = shell
-    .exec('npm config get init-author-name', { silent: true })
-    .stdout.trim();
-  if (author) return author;
-
-  author = shell
-    .exec('git config --global user.name', { silent: true })
-    .stdout.trim();
-  if (author) {
-    setAuthorName(author);
-    return author;
-  }
-
-  author = shell
-    .exec('npm config get init-author-email', { silent: true })
-    .stdout.trim();
-  if (author) return author;
-
-  author = shell
-    .exec('git config --global user.email', { silent: true })
-    .stdout.trim();
-  if (author) return author;
-
-  return author;
-}
-function setAuthorName(author: string) {
-  shell.exec(`npm config set init-author-name "${author}"`, { silent: true });
-}
-
-const logBrand = () =>
-  console.log(
-    chalk.blue(`
-:::::::::   ::::::::  :::     :::  ::      :::
-  :+:     :+:    :+:  :+:+    :+:  :+:    :+:
-  +:+     +:+    +:+  +:+ +:  +:+   +:+  +:+
-  +#+     +#+    +:+  +#:  :+:+#+    +#++:+    😁 
-  +#+     +#+    +#+  +#+     +#+     +#+
-  #+#     #+#    #+#  #+#     #+#     #+#
-  ###     #########   ###     ###    ###
-`)
-  );
-
-const getProjectPath = async (pkg: string, bootSpinner: Ora) => {
-  const realPath = await fs.realpath(process.cwd());
-  async function getProjectPathUtil(projectPath: string): Promise<string> {
-    const exists = await fs.pathExists(projectPath);
-    if (!exists) {
-      return projectPath;
-    }
-
-    bootSpinner.fail(`Failed to create ${chalk.bold.red(pkg)}`);
-    const prompt = new Input({
-      message: `A folder named ${chalk.bold.red(
-        pkg
-      )} already exists! ${chalk.bold('Choose a different name')}`,
-      initial: pkg + '-1',
-      result: (v: string) => v.trim(),
-    });
-
-    pkg = await prompt.run();
-    projectPath = (await fs.realpath(process.cwd())) + '/' + pkg;
-    bootSpinner.start(`Creating ${chalk.bold.green(pkg)}...`);
-    return await getProjectPathUtil(projectPath); // recursion!
-  }
-  return await getProjectPathUtil(realPath + '/' + pkg);
-};

@@ -3,18 +3,19 @@
 import sade from 'sade';
 import { create } from './command/create';
 import logError from './logError';
+
 const pkg = require('../package.json');
 
-sade('tsdx [packageName]')
+sade('create-tony-app [projectName]')
   .version(pkg.version)
-  .describe('Create a new package with TSDX')
-  .example('create mypackage')
-  .example('create --template react mypackage')
-  .action((packageName) => {
-    if (!packageName) {
-      logError('You must provide a package name.');
-    } else {
-      create(packageName);
+  .describe('Compose a Bun monorepo from a visual project tree')
+  .example('my-app')
+  .action(async (projectName?: string) => {
+    try {
+      await create(projectName);
+    } catch (error) {
+      logError(error);
+      process.exitCode = 1;
     }
   })
   .parse(process.argv);

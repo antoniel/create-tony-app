@@ -1,25 +1,23 @@
 # Create Tony App 🚀
 
-```
-:::::::::   ::::::::  :::     :::  ::      :::
-  :+:     :+:    :+:  :+:+    :+:  :+:    :+:
-  +:+     +:+    +:+  +:+ +:  +:+   +:+  +:+
-  +#+     +#+    +:+  +#:  :+:+#+    +#++:+    😁
-  +#+     +#+    +#+  +#+     +#+     +#+
-  #+#     #+#    #+#  #+#     #+#     #+#
-  ###     #########   ###     ###    ###
-```
+Compose a Bun + Turborepo monorepo by selecting its file tree.
 
-Just run `create-tony-app` and you're ready to go!
-
-## Installation
-
-Don't install anything, just run the following command:
-
-```sh
-npx create-tony-app YOUR_APP_NAME
+```bash
+bun create tony-app
 # or
-yarn create tony-app YOUR_APP_NAME
+npm create tony-app
 # or
-bun create tony-app YOUR_APP_NAME
+yarn create tony-app
 ```
+
+The interactive tree currently offers:
+
+```text
+apps/
+  web/       TanStack Start + React Query
+  api/       Elysia
+packages/
+  database/  Drizzle + PostgreSQL
+```
+
+Every folder is optional. The generated integrations adapt to the selected tree: the API only imports the database package when both are selected, and the web starter only calls the API when it exists.
