@@ -23,6 +23,40 @@ function chassisGradient(highlight: string, mid: string, shade: string) {
   return `linear-gradient(165deg, ${highlight} 0%, ${mid} 48%, ${shade} 100%)`
 }
 
+function mixHex(hex: string, toward: string, amount: number) {
+  const parse = (value: string) => {
+    const n = Number.parseInt(value.slice(1), 16)
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as const
+  }
+  const [ar, ag, ab] = parse(hex)
+  const [br, bg, bb] = parse(toward)
+  const mix = (a: number, b: number) => Math.round(a + (b - a) * amount)
+  return `#${[mix(ar, br), mix(ag, bg), mix(ab, bb)].map((n) => n.toString(16).padStart(2, '0')).join('')}`
+}
+
+function chassisTone(draft: ThemeDraft, amount: number) {
+  return {
+    light: {
+      bg: mixHex(draft.surfaces.bg.light, '#ffffff', amount),
+      well: mixHex(draft.surfaces.well.light, '#ffffff', amount),
+      gradient: chassisGradient(
+        mixHex(draft.brand['50'], '#ffffff', amount),
+        mixHex(draft.surfaces.bg.light, '#ffffff', amount),
+        mixHex(draft.surfaces.well.light, '#ffffff', amount),
+      ),
+    },
+    dark: {
+      bg: mixHex(draft.surfaces.bg.dark, '#6a7076', amount),
+      well: mixHex(draft.surfaces.well.dark, '#6a7076', amount),
+      gradient: chassisGradient(
+        mixHex(draft.brand['700'], '#6a7076', amount),
+        mixHex(draft.surfaces.bg.dark, '#6a7076', amount),
+        mixHex(draft.surfaces.well.dark, '#6a7076', amount),
+      ),
+    },
+  }
+}
+
 export function buildThemeConfig(draft: ThemeDraft) {
   return defineConfig({
     cssVarsPrefix: 'tony',
@@ -65,12 +99,8 @@ export function buildThemeConfig(draft: ThemeDraft) {
           xl: { value: 'none' },
         },
         gradients: {
-          chassisLight: {
-            value: chassisGradient(draft.brand['50'], draft.surfaces.bg.light, draft.surfaces.well.light),
-          },
-          chassisDark: {
-            value: chassisGradient(draft.brand['700'], draft.surfaces.bg.dark, draft.surfaces.well.dark),
-          },
+          chassisLight: { value: chassisTone(draft, 0.58).light.gradient },
+          chassisDark: { value: chassisTone(draft, 0).dark.gradient },
         },
       },
       semanticTokens: {
@@ -82,7 +112,7 @@ export function buildThemeConfig(draft: ThemeDraft) {
         colors: {
           app: {
             bg: {
-              value: { _light: draft.surfaces.bg.light, _dark: draft.surfaces.bg.dark },
+              value: { _light: chassisTone(draft, 0.58).light.bg, _dark: chassisTone(draft, 0).dark.bg },
             },
             surface: {
               value: {
@@ -94,7 +124,10 @@ export function buildThemeConfig(draft: ThemeDraft) {
               value: { _light: draft.surfaces.border.light, _dark: draft.surfaces.border.dark },
             },
             well: {
-              value: { _light: draft.surfaces.well.light, _dark: draft.surfaces.well.dark },
+              value: {
+                _light: chassisTone(draft, 0.58).light.well,
+                _dark: chassisTone(draft, 0).dark.well,
+              },
             },
             accent: { value: '{colors.accent}' },
           },
@@ -187,8 +220,8 @@ ${brand}
         xl: { value: 'none' },
       },
       gradients: {
-        chassisLight: { value: ${quote(chassisGradient(draft.brand['50'], draft.surfaces.bg.light, draft.surfaces.well.light))} },
-        chassisDark: { value: ${quote(chassisGradient(draft.brand['700'], draft.surfaces.bg.dark, draft.surfaces.well.dark))} },
+        chassisLight: { value: ${quote(chassisTone(draft, 0.58).light.gradient)} },
+        chassisDark: { value: ${quote(chassisTone(draft, 0).dark.gradient)} },
       },
     },
     semanticTokens: {
@@ -200,7 +233,7 @@ ${brand}
       colors: {
         app: {
           bg: {
-            value: { _light: ${quote(draft.surfaces.bg.light)}, _dark: ${quote(draft.surfaces.bg.dark)} },
+            value: { _light: ${quote(chassisTone(draft, 0.58).light.bg)}, _dark: ${quote(chassisTone(draft, 0).dark.bg)} },
           },
           surface: {
             value: { _light: ${quote(draft.surfaces.surface.light)}, _dark: ${quote(draft.surfaces.surface.dark)} },
@@ -209,7 +242,7 @@ ${brand}
             value: { _light: ${quote(draft.surfaces.border.light)}, _dark: ${quote(draft.surfaces.border.dark)} },
           },
           well: {
-            value: { _light: ${quote(draft.surfaces.well.light)}, _dark: ${quote(draft.surfaces.well.dark)} },
+            value: { _light: ${quote(chassisTone(draft, 0.58).light.well)}, _dark: ${quote(chassisTone(draft, 0).dark.well)} },
           },
           accent: { value: '{colors.accent}' },
         },

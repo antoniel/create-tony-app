@@ -1,8 +1,26 @@
-import { Box, Link as ChakraLink, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Link as ChakraLink, Flex, Menu, Stack, Text } from '@chakra-ui/react'
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
-import { CaretRight, Cube, Faders, Plugs, StackSimple, Swatches } from '@phosphor-icons/react/ssr'
+import {
+  CaretRight,
+  Cube,
+  Desktop,
+  Faders,
+  Moon,
+  Plugs,
+  SidebarSimple,
+  StackSimple,
+  Sun,
+  Swatches,
+} from '@phosphor-icons/react/ssr'
 import { Link, useRouterState } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
+import { useEffect, useState, type ReactNode } from 'react'
+
+const themeModes = [
+  { id: 'light', label: 'light', icon: Sun },
+  { id: 'dark', label: 'dark', icon: Moon },
+  { id: 'system', label: 'system', icon: Desktop },
+] as const
 
 const nav = [
   {
@@ -30,7 +48,36 @@ function currentItem(pathname: string) {
 }
 
 function IconMark({ icon: Glyph }: { icon: PhosphorIcon }) {
-  return <Glyph size={14} weight="light" />
+  return <Glyph size={16} weight="light" />
+}
+
+function NavHit({
+  active,
+  children,
+  collapsed,
+}: {
+  active: boolean
+  children: ReactNode
+  collapsed: boolean
+}) {
+  return (
+    <Flex
+      align="center"
+      bg={active ? 'blackAlpha.100' : 'transparent'}
+      borderRadius="md"
+      boxSize={collapsed ? '8' : undefined}
+      color={active ? 'fg' : 'fg.muted'}
+      fontSize="sm"
+      gap="2"
+      justify={collapsed ? 'center' : 'flex-start'}
+      px={collapsed ? '0' : '2'}
+      py={collapsed ? '0' : '1.5'}
+      w={collapsed ? '8' : 'full'}
+      _hover={{ bg: 'blackAlpha.50', color: 'fg' }}
+    >
+      {children}
+    </Flex>
+  )
 }
 
 export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
@@ -56,21 +103,22 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
 
   return (
     <Flex
+      align={collapsed ? 'center' : 'stretch'}
       as="aside"
       direction="column"
       flexShrink="0"
       gap="8"
       h="full"
       overflow="auto"
-      px={collapsed ? '2' : '4'}
+      px={collapsed ? '0' : '4'}
       py="2"
-      w={collapsed ? '14' : '52'}
+      w={collapsed ? '12' : '52'}
     >
-      <Flex align="center" justify={collapsed ? 'center' : 'space-between'}>
+      <Flex align="center" gap="3" justify={collapsed ? 'center' : 'space-between'} px={collapsed ? '0' : '2'} w="full">
         {collapsed ? null : (
           <ChakraLink asChild>
             <Link to="/">
-              <Flex align="center" gap="3">
+              <Flex align="center" gap="3" minW="0">
                 <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.2em">
                   TONY
                 </Text>
@@ -86,43 +134,38 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
           as="button"
           aria-expanded={!collapsed}
           aria-label={collapsed ? 'open sidebar' : 'close sidebar'}
-          bg="app.well"
-          borderRadius="full"
-          boxSize="8"
+          color="fg.muted"
           cursor="pointer"
-          p="1"
-          shadow="md"
+          display="flex"
+          flexShrink="0"
+          h="8"
+          placeContent="center"
+          placeItems="center"
           type="button"
+          w="8"
+          _hover={{ color: 'fg' }}
           onClick={onToggle}
         >
-          <Box bg="app.accent" borderRadius="full" boxSize="full" />
+          <SidebarSimple size={16} weight="light" />
         </Box>
       </Flex>
 
-      <Stack gap="2">
+      <Stack align={collapsed ? 'center' : 'stretch'} gap="2" w="full">
         {nav.map((group) => {
           const expanded = open[group.label] ?? false
           const groupActive = group.items.some((item) => itemActive(pathname, item))
 
           if (collapsed) {
             return (
-              <Stack gap="1" key={group.label}>
+              <Stack align="center" gap="1" key={group.label}>
                 {group.items.map((item) => {
                   const active = itemActive(pathname, item)
                   return (
                     <ChakraLink asChild key={item.to}>
                       <Link to={item.to}>
-                        <Flex
-                          align="center"
-                          bg={active ? 'blackAlpha.100' : 'transparent'}
-                          borderRadius="md"
-                          color={active ? 'fg' : 'fg.muted'}
-                          justify="center"
-                          py="2"
-                          _hover={{ bg: 'blackAlpha.50', color: 'fg' }}
-                        >
+                        <NavHit active={active} collapsed>
                           <IconMark icon={item.icon} />
-                        </Flex>
+                        </NavHit>
                       </Link>
                     </ChakraLink>
                   )
@@ -132,7 +175,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
           }
 
           return (
-            <Stack gap="1" key={group.label}>
+            <Stack gap="1" key={group.label} w="full">
               <Flex
                 as="button"
                 align="center"
@@ -171,17 +214,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                     return (
                       <ChakraLink asChild key={item.to}>
                         <Link to={item.to}>
-                          <Flex
-                            align="center"
-                            bg={active ? 'blackAlpha.100' : 'transparent'}
-                            borderRadius="md"
-                            color={active ? 'fg' : 'fg.muted'}
-                            fontSize="sm"
-                            gap="2"
-                            px="2"
-                            py="1.5"
-                            _hover={{ bg: 'blackAlpha.50', color: 'fg' }}
-                          >
+                          <NavHit active={active} collapsed={false}>
                             <IconMark icon={item.icon} />
                             <Text flex="1" letterSpacing="-0.01em">
                               {item.label}
@@ -189,7 +222,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                             <Text fontFamily="mono" fontSize="2xs" letterSpacing="0.08em">
                               {item.spec}
                             </Text>
-                          </Flex>
+                          </NavHit>
                         </Link>
                       </ChakraLink>
                     )
@@ -200,6 +233,65 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
           )
         })}
       </Stack>
+
+      <ThemeToggle collapsed={collapsed} />
+    </Flex>
+  )
+}
+
+function ThemeToggle({ collapsed }: { collapsed: boolean }) {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const current = themeModes.find((mode) => mode.id === theme) ?? themeModes[2]
+
+  return (
+    <Flex justify="center" mt="auto" w="full">
+      <Menu.Root
+        onSelect={(details) => setTheme(details.value)}
+        positioning={{ placement: collapsed ? 'right-end' : 'top' }}
+      >
+        <Menu.Trigger asChild>
+          <Box
+            as="button"
+            aria-label="theme"
+            color="fg.muted"
+            cursor="pointer"
+            display="flex"
+            h="8"
+            placeContent="center"
+            placeItems="center"
+            type="button"
+            w="8"
+            _hover={{ color: 'fg' }}
+          >
+            <IconMark icon={mounted ? current.icon : Desktop} />
+          </Box>
+        </Menu.Trigger>
+        <Menu.Positioner>
+          <Menu.Content bg="app.surface" borderColor="app.border" minW="36" p="1">
+            {themeModes.map((mode) => {
+              const active = mounted && theme === mode.id
+              return (
+                <Menu.Item
+                  bg={active ? 'blackAlpha.100' : 'transparent'}
+                  color={active ? 'fg' : 'fg.muted'}
+                  gap="2"
+                  key={mode.id}
+                  value={mode.id}
+                >
+                  <IconMark icon={mode.icon} />
+                  <Text fontSize="sm">{mode.label}</Text>
+                </Menu.Item>
+              )
+            })}
+          </Menu.Content>
+        </Menu.Positioner>
+      </Menu.Root>
     </Flex>
   )
 }
