@@ -1,7 +1,7 @@
-import { Box, Flex, Link as ChakraLink, Stack, Text } from '@chakra-ui/react'
-import { Link, useRouterState } from '@tanstack/react-router'
+import { Box, Link as ChakraLink, Flex, Stack, Text } from '@chakra-ui/react'
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
 import { CaretRight, Cube, Faders, Plugs, StackSimple, Swatches } from '@phosphor-icons/react/ssr'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 const nav = [
@@ -63,7 +63,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
       h="full"
       overflow="auto"
       px={collapsed ? '2' : '4'}
-      py="4"
+      py="2"
       w={collapsed ? '14' : '52'}
     >
       <Flex align="center" justify={collapsed ? 'center' : 'space-between'}>

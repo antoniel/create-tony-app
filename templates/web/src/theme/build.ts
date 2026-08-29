@@ -19,6 +19,10 @@ function radiusScale(radius: string) {
   }
 }
 
+function chassisGradient(highlight: string, mid: string, shade: string) {
+  return `linear-gradient(165deg, ${highlight} 0%, ${mid} 48%, ${shade} 100%)`
+}
+
 export function buildThemeConfig(draft: ThemeDraft) {
   return defineConfig({
     cssVarsPrefix: 'tony',
@@ -28,6 +32,7 @@ export function buildThemeConfig(draft: ThemeDraft) {
       },
       body: {
         bg: 'app.bg',
+        backgroundImage: 'gradients.chassis',
         color: 'fg',
         margin: '0',
       },
@@ -59,8 +64,21 @@ export function buildThemeConfig(draft: ThemeDraft) {
           lg: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.4)' },
           xl: { value: 'none' },
         },
+        gradients: {
+          chassisLight: {
+            value: chassisGradient(draft.brand['50'], draft.surfaces.bg.light, draft.surfaces.well.light),
+          },
+          chassisDark: {
+            value: chassisGradient(draft.brand['700'], draft.surfaces.bg.dark, draft.surfaces.well.dark),
+          },
+        },
       },
       semanticTokens: {
+        gradients: {
+          chassis: {
+            value: { _light: '{gradients.chassisLight}', _dark: '{gradients.chassisDark}' },
+          },
+        },
         colors: {
           app: {
             bg: {
@@ -114,7 +132,9 @@ function quote(value: string) {
 }
 
 export function themeSource(draft: ThemeDraft) {
-  const brand = brandSteps.map((step) => `          ${step}: { value: ${quote(draft.brand[step])} },`).join('\n')
+  const brand = brandSteps
+    .map((step) => `          ${step}: { value: ${quote(draft.brand[step])} },`)
+    .join('\n')
 
   return `import { createSystem, defaultConfig, defineConfig } from '@chakra-ui/react'
 
@@ -126,6 +146,7 @@ const config = defineConfig({
     },
     body: {
       bg: 'app.bg',
+      backgroundImage: 'gradients.chassis',
       color: 'fg',
       margin: '0',
     },
@@ -165,8 +186,17 @@ ${brand}
         lg: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.4)' },
         xl: { value: 'none' },
       },
+      gradients: {
+        chassisLight: { value: ${quote(chassisGradient(draft.brand['50'], draft.surfaces.bg.light, draft.surfaces.well.light))} },
+        chassisDark: { value: ${quote(chassisGradient(draft.brand['700'], draft.surfaces.bg.dark, draft.surfaces.well.dark))} },
+      },
     },
     semanticTokens: {
+      gradients: {
+        chassis: {
+          value: { _light: '{gradients.chassisLight}', _dark: '{gradients.chassisDark}' },
+        },
+      },
       colors: {
         app: {
           bg: {
