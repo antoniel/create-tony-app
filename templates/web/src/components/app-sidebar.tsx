@@ -1,4 +1,4 @@
-import { Box, Flex, Link as ChakraLink, Stack, Text } from '@chakra-ui/react'
+import { Box, Link as ChakraLink, Flex, Stack, Text } from '@chakra-ui/react'
 import { Link, useRouterState } from '@tanstack/react-router'
 
 const nav = [
@@ -8,7 +8,10 @@ const nav = [
   },
   {
     label: 'Modules',
-    items: [{ to: '/components', label: 'Components', sku: 'UI-02' }],
+    items: [
+      { to: '/components', label: 'Components', sku: 'UI-02' },
+      { to: '/theme', label: 'Theme editor', sku: 'TH-03' },
+    ],
   },
 ] as const
 
@@ -63,7 +66,7 @@ export function AppSidebar() {
                         _hover={{ bg: active ? 'fg' : 'app.bg', color: active ? 'app.bg' : 'fg' }}
                       >
                         <Text fontWeight="500">{item.label}</Text>
-                        <Text fontFamily="mono" fontSize="2xs">
+                        <Text fontFamily="mono" ml={2} fontSize="2xs">
                           {item.sku}
                         </Text>
                       </Flex>
