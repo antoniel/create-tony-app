@@ -1,5 +1,6 @@
 import { app } from './app'
+import { env } from './env'
 
-app.listen(Number(process.env.PORT ?? 3001))
+app.listen(env.PORT)
 
 console.log(`API running at ${app.server?.url}`)

@@ -69,6 +69,11 @@ function templateTarget(relative, features) {
         ? 'templates/api/src/app.with-database.ts'
         : 'templates/api/src/app.standalone.ts';
     }
+    if (rest === 'src/env.ts') {
+      return features.database
+        ? 'templates/api/src/env.with-database.ts'
+        : 'templates/api/src/env.standalone.ts';
+    }
     return `templates/api/${rest}`;
   }
 

@@ -140,15 +140,14 @@ async function writeFeaturePackageJson(projectPath: string, selection: ProjectSe
 async function writeConditionalFiles(projectPath: string, features: Feature[]) {
   const selected = new Set(features);
 
+  if (selected.has('api') || selected.has('database')) {
+    const envFile = rootEnvFile(selected.has('database'));
+    await fs.outputFile(path.join(projectPath, '.env.example'), envFile);
+    await fs.outputFile(path.join(projectPath, '.env'), envFile);
+    await fs.remove(path.join(projectPath, 'packages/database/.env.example')).catch(() => undefined);
+  }
+
   if (selected.has('database')) {
-    await fs.move(
-      path.join(projectPath, 'packages/database/.env.example'),
-      path.join(projectPath, '.env.example')
-    );
-    await fs.copy(
-      path.join(projectPath, '.env.example'),
-      path.join(projectPath, '.env')
-    );
     await appendDatabaseReadme(projectPath);
   }
 
@@ -156,18 +155,31 @@ async function writeConditionalFiles(projectPath: string, features: Feature[]) {
     const source = selected.has('database')
       ? 'app.with-database.ts'
       : 'app.standalone.ts';
+    const envSource = selected.has('database')
+      ? 'env.with-database.ts'
+      : 'env.standalone.ts';
     const apiSourcePath = path.join(projectPath, 'apps/api/src');
 
-    await fs.move(
-      path.join(apiSourcePath, source),
-      path.join(apiSourcePath, 'app.ts')
-    );
+    await fs.move(path.join(apiSourcePath, source), path.join(apiSourcePath, 'app.ts'), {
+      overwrite: true,
+    });
+    await fs.move(path.join(apiSourcePath, envSource), path.join(apiSourcePath, 'env.ts'), {
+      overwrite: true,
+    });
     await fs.remove(
       path.join(
         apiSourcePath,
         selected.has('database')
           ? 'app.standalone.ts'
           : 'app.with-database.ts'
+      )
+    );
+    await fs.remove(
+      path.join(
+        apiSourcePath,
+        selected.has('database')
+          ? 'env.standalone.ts'
+          : 'env.with-database.ts'
       )
     );
 
@@ -180,7 +192,9 @@ async function writeConditionalFiles(projectPath: string, features: Feature[]) {
     const source = selected.has('api') ? 'index.with-api.tsx' : 'index.standalone.tsx';
     const webSourcePath = path.join(projectPath, 'apps/web/src');
     const routesPath = path.join(webSourcePath, 'routes');
-    await fs.move(path.join(routesPath, source), path.join(routesPath, 'index.tsx'));
+    await fs.move(path.join(routesPath, source), path.join(routesPath, 'index.tsx'), {
+      overwrite: true,
+    });
     await fs.remove(path.join(routesPath, selected.has('api') ? 'index.standalone.tsx' : 'index.with-api.tsx'));
 
     if (!selected.has('api')) {
@@ -198,7 +212,7 @@ async function appendDatabaseReadme(projectPath: string) {
     `
 ## Database
 
-The workspace uses PGlite, an in-process Postgres. It starts on first create and again whenever the API imports \`@app/database\`. Data lives in \`packages/database/data\` and does not need Docker.
+The workspace uses PGlite, an in-process Postgres. It starts on first create and again whenever the API imports \`@app/database\`. Point \`DATABASE_URL\` in the root \`.env\` at \`packages/database/data\`. Change that one value when you move off PGlite.
 
 Run Drizzle from the workspace root:
 
@@ -309,6 +323,14 @@ function databasePackageJson() {
       'drizzle-kit': '^0.31.10',
     },
   };
+}
+
+function rootEnvFile(withDatabase: boolean) {
+  const lines = ['PORT=3001'];
+  if (withDatabase) {
+    lines.push('DATABASE_URL=packages/database/data');
+  }
+  return `${lines.join('\n')}\n`;
 }
 
 function toPackageName(value: string) {
