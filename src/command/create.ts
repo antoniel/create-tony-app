@@ -243,10 +243,12 @@ function webPackageJson(withApi: boolean) {
     type: 'module',
     scripts: {
       dev: 'vite dev --port 3000',
-      build: 'vite build',
+      build: 'chakra typegen src/theme/index.ts && vite build',
       'generate-routes': 'tsr generate',
+      typegen: 'chakra typegen src/theme/index.ts',
+      postinstall: 'chakra typegen src/theme/index.ts',
       lint: 'oxlint .',
-      typecheck: 'tsr generate && tsc --noEmit',
+      typecheck: 'tsr generate && chakra typegen src/theme/index.ts && tsc --noEmit',
     },
     dependencies: {
       ...(withApi ? { '@elysia/eden': '^1.4.10' } : {}),
@@ -267,6 +269,7 @@ function webPackageJson(withApi: boolean) {
       ...(withApi
         ? { '@app/api': 'workspace:*', elysia: '^1.4.30' }
         : {}),
+      '@chakra-ui/cli': '^3.36.1',
       '@tanstack/router-cli': '^1.167.33',
       '@types/react': '^19.2.0',
       '@types/react-dom': '^19.2.0',

@@ -1,24 +1,22 @@
-import { Badge, Box, Button, Code, Container, Heading, HStack, Stack, Text } from '@chakra-ui/react'
-import { DocsSection } from './docs-section'
+import { Badge, Box, Button, Code, HStack, Stack, Text } from '@chakra-ui/react'
+import { DocsSection, PageFrame, PageIntro } from './docs-section'
 import { UrlStateExample } from './url-state-example'
 
-const buttonVariants = ['solid', 'subtle', 'outline', 'ghost'] as const
+const buttonVariants = ['solid', 'outline'] as const
 
 export function ComponentsPage() {
   return (
-    <Container maxW="6xl" py={{ base: '10', md: '16' }}>
+    <PageFrame>
       <Stack gap="16">
-        <Stack gap="4" maxW="2xl">
-          <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.16em">
-            02
-          </Text>
-          <Heading fontSize={{ base: '3xl', md: '4xl' }} fontWeight="400" lineHeight="1.05">
-            bits
-          </Heading>
-          <Text color="fg.muted">solid is steel. outline is a port. ghost is off the plate.</Text>
-        </Stack>
+        <PageIntro spec="02" title="bits">
+          <Text color="fg.muted">solid is steel. outline is a port. that is the set.</Text>
+        </PageIntro>
 
-        <DocsSection copy="one dark fill. the rest is a thinner legend." kicker="ctrl" title="buttons">
+        <DocsSection
+          copy="two fills. solid does the work. outline marks a port."
+          kicker="ctrl"
+          title="buttons"
+        >
           <HStack gap="3" wrap="wrap">
             {buttonVariants.map((variant) => (
               <Button colorPalette="brand" key={variant} variant={variant}>
@@ -28,7 +26,7 @@ export function ComponentsPage() {
           </HStack>
           <HStack gap="3" pt="2">
             <Box bg="app.accent" borderRadius="full" boxSize="9" shadow="sm" />
-            <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.12em">
+            <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide">
               power
             </Text>
           </HStack>
@@ -38,9 +36,6 @@ export function ComponentsPage() {
           <HStack gap="3" wrap="wrap">
             <Badge colorPalette="brand" variant="solid">
               solid
-            </Badge>
-            <Badge colorPalette="brand" variant="subtle">
-              subtle
             </Badge>
             <Badge colorPalette="brand" variant="outline">
               outline
@@ -57,6 +52,6 @@ export function ComponentsPage() {
           </Stack>
         </DocsSection>
       </Stack>
-    </Container>
+    </PageFrame>
   )
 }

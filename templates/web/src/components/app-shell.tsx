@@ -6,7 +6,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <Flex bg="app.bg" bgImage="gradients.chassis"  h="100dvh" overflow="hidden" py="2" pr="2">
+    <Flex bg="app.bg" bgImage="gradients.chassis" h="100dvh" overflow="hidden" py="2" pr="2">
       <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed((current) => !current)} />
       <Box
         as="main"

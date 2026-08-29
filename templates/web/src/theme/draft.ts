@@ -1,4 +1,16 @@
-export const brandSteps = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'] as const
+export const brandSteps = [
+  '50',
+  '100',
+  '200',
+  '300',
+  '400',
+  '500',
+  '600',
+  '700',
+  '800',
+  '900',
+  '950',
+] as const
 
 export type BrandStep = (typeof brandSteps)[number]
 
@@ -16,7 +28,6 @@ export interface ThemeDraft {
     body: string
     mono: string
   }
-  radius: string
 }
 
 export const defaultDraft: ThemeDraft = {
@@ -45,5 +56,4 @@ export const defaultDraft: ThemeDraft = {
     body: '"Inter", Helvetica, Arial, sans-serif',
     mono: '"IBM Plex Mono", ui-monospace, SFMono-Regular, monospace',
   },
-  radius: '12px',
 }

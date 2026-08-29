@@ -1,21 +1,27 @@
 import { createSystem, defaultConfig, defineConfig } from '@chakra-ui/react'
 import { brandSteps, defaultDraft, type ThemeDraft } from './draft'
 
-function px(value: number) {
-  return `${Math.max(0, value)}px`
-}
+const edgeRadius = '4px'
+const controlRadius = '8px'
+const plateRadius = '24px'
+const seam = 'inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(90, 96, 102, 0.16), inset 0 2px 8px rgba(0, 0, 0, 0.04)'
 
-function radiusScale(radius: string) {
-  const n = Number.parseInt(radius, 10) || 12
+function radii() {
   return {
     none: { value: '0' },
-    sm: { value: px(Math.max(4, n - 4)) },
-    md: { value: px(n) },
-    lg: { value: px(n + 4) },
-    xl: { value: px(n + 8) },
-    '2xl': { value: px(n + 12) },
-    '3xl': { value: px(n + 20) },
-    '4xl': { value: px(n + 28) },
+    sm: { value: edgeRadius },
+    md: { value: controlRadius },
+    '2xl': { value: plateRadius },
+    full: { value: '9999px' },
+    l1: { value: edgeRadius },
+    l2: { value: controlRadius },
+    l3: { value: plateRadius },
+  }
+}
+
+function shadows() {
+  return {
+    sm: { value: seam },
   }
 }
 
@@ -87,16 +93,16 @@ export function buildThemeConfig(draft: ThemeDraft) {
           body: { value: draft.fonts.body },
           mono: { value: draft.fonts.mono },
         },
-        radii: radiusScale(draft.radius),
-        shadows: {
-          xs: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.55)' },
-          sm: {
-            value:
-              'inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(90, 96, 102, 0.16), inset 0 2px 8px rgba(0, 0, 0, 0.04)',
-          },
-          md: { value: 'inset 0 2px 10px rgba(0, 0, 0, 0.08)' },
-          lg: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.4)' },
-          xl: { value: 'none' },
+        radii: radii(),
+        shadows: shadows(),
+        letterSpacings: {
+          tight: { value: '-0.02em' },
+          wide: { value: '0.14em' },
+          widest: { value: '0.2em' },
+        },
+        lineHeights: {
+          none: { value: '1' },
+          plate: { value: '1.05' },
         },
         gradients: {
           chassisLight: { value: chassisTone(draft, 0.58).light.gradient },
@@ -112,7 +118,10 @@ export function buildThemeConfig(draft: ThemeDraft) {
         colors: {
           app: {
             bg: {
-              value: { _light: chassisTone(draft, 0.58).light.bg, _dark: chassisTone(draft, 0).dark.bg },
+              value: {
+                _light: chassisTone(draft, 0.58).light.bg,
+                _dark: chassisTone(draft, 0).dark.bg,
+              },
             },
             surface: {
               value: {
@@ -133,13 +142,13 @@ export function buildThemeConfig(draft: ThemeDraft) {
           },
           brand: {
             solid: {
-              value: { _light: '{colors.brand.800}', _dark: '{colors.brand.100}' },
+              value: { _light: '{colors.brand.950}', _dark: '{colors.brand.50}' },
             },
             contrast: {
-              value: { _light: '{colors.white}', _dark: '{colors.black}' },
+              value: { _light: '{colors.brand.50}', _dark: '{colors.brand.950}' },
             },
             fg: {
-              value: { _light: '{colors.brand.800}', _dark: '{colors.brand.100}' },
+              value: { _light: '{colors.brand.950}', _dark: '{colors.brand.50}' },
             },
             muted: { value: '{colors.brand.100}' },
             subtle: {
@@ -147,6 +156,29 @@ export function buildThemeConfig(draft: ThemeDraft) {
             },
             emphasized: { value: '{colors.brand.200}' },
             focusRing: { value: '{colors.accent}' },
+          },
+        },
+      },
+      recipes: {
+        button: {
+          variants: {
+            variant: {
+              solid: {
+                bg: { _light: 'brand.950', _dark: 'brand.50' },
+                color: { _light: 'brand.50', _dark: 'brand.950' },
+                borderColor: 'transparent',
+              },
+            },
+          },
+        },
+        badge: {
+          variants: {
+            variant: {
+              solid: {
+                bg: { _light: 'brand.950', _dark: 'brand.50' },
+                color: { _light: 'brand.50', _dark: 'brand.950' },
+              },
+            },
           },
         },
       },
@@ -204,20 +236,25 @@ ${brand}
       },
       radii: {
         none: { value: '0' },
-        sm: { value: ${quote(radiusScale(draft.radius).sm.value)} },
-        md: { value: ${quote(radiusScale(draft.radius).md.value)} },
-        lg: { value: ${quote(radiusScale(draft.radius).lg.value)} },
-        xl: { value: ${quote(radiusScale(draft.radius).xl.value)} },
-        '2xl': { value: ${quote(radiusScale(draft.radius)['2xl'].value)} },
-        '3xl': { value: ${quote(radiusScale(draft.radius)['3xl'].value)} },
-        '4xl': { value: ${quote(radiusScale(draft.radius)['4xl'].value)} },
+        sm: { value: ${quote(edgeRadius)} },
+        md: { value: ${quote(controlRadius)} },
+        '2xl': { value: ${quote(plateRadius)} },
+        full: { value: '9999px' },
+        l1: { value: ${quote(edgeRadius)} },
+        l2: { value: ${quote(controlRadius)} },
+        l3: { value: ${quote(plateRadius)} },
       },
       shadows: {
-        xs: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.55)' },
-        sm: { value: 'inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(90, 96, 102, 0.16), inset 0 2px 8px rgba(0, 0, 0, 0.04)' },
-        md: { value: 'inset 0 2px 10px rgba(0, 0, 0, 0.08)' },
-        lg: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.4)' },
-        xl: { value: 'none' },
+        sm: { value: ${quote(seam)} },
+      },
+      letterSpacings: {
+        tight: { value: '-0.02em' },
+        wide: { value: '0.14em' },
+        widest: { value: '0.2em' },
+      },
+      lineHeights: {
+        none: { value: '1' },
+        plate: { value: '1.05' },
       },
       gradients: {
         chassisLight: { value: ${quote(chassisTone(draft, 0.58).light.gradient)} },
@@ -248,13 +285,13 @@ ${brand}
         },
         brand: {
           solid: {
-            value: { _light: '{colors.brand.800}', _dark: '{colors.brand.100}' },
+            value: { _light: '{colors.brand.950}', _dark: '{colors.brand.50}' },
           },
           contrast: {
-            value: { _light: '{colors.white}', _dark: '{colors.black}' },
+            value: { _light: '{colors.brand.50}', _dark: '{colors.brand.950}' },
           },
           fg: {
-            value: { _light: '{colors.brand.800}', _dark: '{colors.brand.100}' },
+            value: { _light: '{colors.brand.950}', _dark: '{colors.brand.50}' },
           },
           muted: { value: '{colors.brand.100}' },
           subtle: {
@@ -262,6 +299,29 @@ ${brand}
           },
           emphasized: { value: '{colors.brand.200}' },
           focusRing: { value: '{colors.accent}' },
+        },
+      },
+      recipes: {
+        button: {
+          variants: {
+            variant: {
+              solid: {
+                bg: { _light: 'brand.950', _dark: 'brand.50' },
+                color: { _light: 'brand.50', _dark: 'brand.950' },
+                borderColor: 'transparent',
+              },
+            },
+          },
+        },
+        badge: {
+          variants: {
+            variant: {
+              solid: {
+                bg: { _light: 'brand.950', _dark: 'brand.50' },
+                color: { _light: 'brand.50', _dark: 'brand.950' },
+              },
+            },
+          },
         },
       },
     },

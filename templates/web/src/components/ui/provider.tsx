@@ -5,10 +5,10 @@ import { ThemeStudioProvider } from '../../theme/studio'
 
 export function Provider({ children }: PropsWithChildren) {
   return (
-    <ThemeStudioProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ThemeStudioProvider>
         <NuqsAdapter>{children}</NuqsAdapter>
-      </ThemeProvider>
-    </ThemeStudioProvider>
+      </ThemeStudioProvider>
+    </ThemeProvider>
   )
 }

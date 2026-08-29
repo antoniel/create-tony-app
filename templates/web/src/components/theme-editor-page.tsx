@@ -1,16 +1,13 @@
-import { Box, Button, Code, Container, Flex, Grid, Heading, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Code, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import { useState, type ChangeEvent } from 'react'
-import { DocsSection } from './docs-section'
+import { DocsSection, PageFrame, PageIntro } from './docs-section'
 import { brandSteps, type ThemeDraft } from '../theme/draft'
 import { useThemeStudio } from '../theme/studio'
 
 const fontPresets = [
   { label: 'Inter', value: '"Inter", Helvetica, Arial, sans-serif' },
   { label: 'IBM Plex Mono', value: '"IBM Plex Mono", ui-monospace, SFMono-Regular, monospace' },
-  { label: 'System', value: 'ui-sans-serif, system-ui, sans-serif' },
 ] as const
-
-const radiusPresets = ['0', '8px', '12px', '16px', '20px'] as const
 
 export function ThemeEditorPage() {
   const { draft, source, setDraft, reset } = useThemeStudio()
@@ -23,15 +20,9 @@ export function ThemeEditorPage() {
   }
 
   return (
-    <Container maxW="6xl" py={{ base: '10', md: '16' }}>
+    <PageFrame>
       <Stack gap="16">
-        <Stack gap="5" maxW="3xl">
-          <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.16em">
-            03
-          </Text>
-          <Heading fontSize={{ base: '3xl', md: '4xl' }} fontWeight="400" lineHeight="1.05">
-            tune
-          </Heading>
+        <PageIntro maxW="3xl" spec="03" title="tune">
           <Text color="fg.muted">
             rebuilds the system live. copy into <Code>apps/web/src/theme/index.ts</Code>
           </Text>
@@ -43,7 +34,7 @@ export function ThemeEditorPage() {
               Reset
             </Button>
           </Flex>
-        </Stack>
+        </PageIntro>
 
         <DocsSection
           copy="metal ramp behind colorPalette=brand."
@@ -122,14 +113,14 @@ export function ThemeEditorPage() {
         </DocsSection>
 
         <DocsSection
-          copy="Pick a preset or type a stack. Load the font in __root if it is not already there."
+          copy="inter on the plate. plex mono on the etch. that is the stack."
           kicker="type"
-          title="Fonts"
+          title="fonts"
         >
           <Stack gap="4">
             {(['heading', 'body', 'mono'] as const).map((role) => (
               <Stack borderColor="app.border" borderWidth="1px" gap="3" key={role} p="4">
-                <Text fontFamily="mono" fontSize="2xs" letterSpacing="0.14em">
+                <Text fontFamily="mono" fontSize="2xs" letterSpacing="wide">
                   {role.toUpperCase()}
                 </Text>
                 <Box
@@ -175,28 +166,9 @@ export function ThemeEditorPage() {
         </DocsSection>
 
         <DocsSection
-          copy="one value for every radius token. 4px is the machine edge."
-          kicker="shape"
-          title="Radius"
-        >
-          <Flex gap="2" wrap="wrap">
-            {radiusPresets.map((radius) => (
-              <Button
-                colorPalette="brand"
-                key={radius}
-                variant={draft.radius === radius ? 'solid' : 'outline'}
-                onClick={() => setDraft((current) => ({ ...current, radius }))}
-              >
-                {radius}
-              </Button>
-            ))}
-          </Flex>
-        </DocsSection>
-
-        <DocsSection
-          copy="Paste this over apps/web/src/theme/index.ts in the generated app."
+          copy="paste this over apps/web/src/theme/index.ts in the generated app."
           kicker="export"
-          title="Chakra file"
+          title="chakra file"
         >
           <Stack gap="4">
             <Button colorPalette="brand" w="fit-content" onClick={copy}>
@@ -220,7 +192,7 @@ export function ThemeEditorPage() {
           </Stack>
         </DocsSection>
       </Stack>
-    </Container>
+    </PageFrame>
   )
 }
 
@@ -228,7 +200,7 @@ function patchSurface(
   setDraft: (next: ThemeDraft | ((current: ThemeDraft) => ThemeDraft)) => void,
   token: keyof ThemeDraft['surfaces'],
   mode: 'light' | 'dark',
-  value: string
+  value: string,
 ) {
   setDraft((current) => ({
     ...current,
@@ -252,7 +224,7 @@ function ColorField({
 
   return (
     <Stack borderColor="app.border" borderWidth="1px" gap="3" p="3">
-      <Box bg={value} h="14" />
+      <Box bg={`[${value}]`} h="14" />
       <Text fontFamily="mono" fontSize="2xs">
         {label}
       </Text>

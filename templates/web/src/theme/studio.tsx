@@ -22,7 +22,9 @@ export function ThemeStudioProvider({ children }: { children: ReactNode }) {
   }, [defaultDraft])
 
   return (
-    <ThemeStudioContext.Provider value={{ draft, source, setDraft, reset: () => setDraft(defaultDraft) }}>
+    <ThemeStudioContext.Provider
+      value={{ draft, source, setDraft, reset: () => setDraft(defaultDraft) }}
+    >
       <ChakraProvider value={system}>{children}</ChakraProvider>
     </ThemeStudioContext.Provider>
   )

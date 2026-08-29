@@ -8,7 +8,7 @@ export function UrlStateExample() {
 
   return (
     <HStack gap="3" wrap="wrap">
-      <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.14em">
+      <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide">
         filter
       </Text>
       {views.map((value) => (

@@ -1,5 +1,5 @@
-import { Box, Code, Container, Flex, Grid, Heading, Stack, Text } from '@chakra-ui/react'
-import { DocsSection } from './docs-section'
+import { Box, Code, Flex, Grid, Stack, Text } from '@chakra-ui/react'
+import { DocsSection, PageFrame, PageIntro } from './docs-section'
 
 const brandScale = [
   ['50', '#f7f8f9'],
@@ -24,26 +24,48 @@ const semanticColors = [
   { token: 'brand.solid', swatch: 'brand.solid', note: 'steel' },
 ] as const
 
-const spaces = ['1', '2', '3', '4', '5', '6', '8', '10', '12', '16'] as const
-const typeSizes = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'] as const
-const radii = ['sm', 'md', 'lg', 'xl', '2xl', 'full'] as const
-const shadows = ['xs', 'sm', 'md', 'lg'] as const
+const spaces = [
+  '0.5',
+  '1',
+  '1.5',
+  '2',
+  '2.5',
+  '3',
+  '3.5',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '12',
+  '14',
+  '16',
+  '20',
+  '24',
+] as const
+const typeRoles = [
+  { size: '2xs', note: 'etch' },
+  { size: 'sm', note: 'ctrl' },
+  { size: 'md', note: 'copy' },
+  { size: '4xl', note: 'plate' },
+] as const
+const edges = [
+  { token: 'sm', note: 'edge · 4px' },
+  { token: 'md', note: 'control · 8px' },
+  { token: '2xl', note: 'plate · 24px' },
+] as const
 
 export function DesignSystemPage({ status }: { status?: string }) {
   return (
-    <Container maxW="6xl" py={{ base: '10', md: '16' }}>
+    <PageFrame>
       <Stack gap="16">
-        <Stack gap="4" maxW="2xl">
-          <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.16em">
-            01{status ? `  ·  ${status}` : ''}
-          </Text>
-          <Heading fontSize={{ base: '3xl', md: '4xl' }} fontWeight="400" lineHeight="1.05">
-            LM 5–180
-          </Heading>
+        <PageIntro spec={`01${status ? `  ·  ${status}` : ''}`} title="LM 5–180">
           <Text color="fg.muted">
             titanium chassis, white insert. tokens in <Code>apps/web/src/theme/index.ts</Code>
           </Text>
-        </Stack>
+        </PageIntro>
 
         <DocsSection
           copy="titanium ramp. orange is a control, not a scale."
@@ -77,7 +99,7 @@ export function DesignSystemPage({ status }: { status?: string }) {
           </Grid>
         </DocsSection>
 
-        <DocsSection copy="1 = 4px. 4 = 16px. 8 = 32px." kicker="space" title="pitch">
+        <DocsSection copy="1 = 4px. the whole ladder stays." kicker="space" title="pitch">
           <Stack gap="3">
             {spaces.map((space) => (
               <Flex align="center" gap="4" key={space}>
@@ -88,59 +110,53 @@ export function DesignSystemPage({ status }: { status?: string }) {
           </Stack>
         </DocsSection>
 
-        <DocsSection copy="inter for the plate. plex mono for the etch." kicker="type" title="legend">
+        <DocsSection
+          copy="inter on the plate. plex mono on the etch. four sizes."
+          kicker="type"
+          title="legend"
+        >
           <Stack gap="5">
-            {typeSizes.map((size) => (
+            {typeRoles.map((role) => (
               <Flex
                 align="baseline"
                 borderBottomWidth="1px"
                 borderColor="app.border"
                 gap="6"
-                key={size}
+                key={role.size}
                 pb="3"
               >
-                <Code minW="10">{size}</Code>
-                <Text fontSize={size} fontWeight="400" letterSpacing="-0.02em" lineHeight="1">
+                <Code minW="10">{role.size}</Code>
+                <Text fontSize={role.size} fontWeight="normal" letterSpacing="tight" lineHeight="none">
                   the quick brown fox
+                </Text>
+                <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide">
+                  {role.note}
                 </Text>
               </Flex>
             ))}
           </Stack>
         </DocsSection>
 
-        <DocsSection copy="4px machine edge. elevation is a seam or an inset." kicker="shape" title="edge">
-          <Grid gap="0" templateColumns="repeat(auto-fill, minmax(10rem, 1fr))">
-            {radii.map((radius) => (
+        <DocsSection copy="4, 8, 24. that is the set." kicker="shape" title="edge">
+          <Grid gap="6" templateColumns="repeat(auto-fill, minmax(14rem, 1fr))">
+            {edges.map((edge) => (
               <Box
                 borderColor="app.border"
-                borderRadius={radius}
+                borderRadius={edge.token}
                 borderWidth="1px"
-                key={radius}
+                key={edge.token}
                 px="4"
                 py="10"
-                textAlign="center"
               >
-                <Code>{radius}</Code>
-              </Box>
-            ))}
-          </Grid>
-          <Grid gap="0" templateColumns="repeat(auto-fill, minmax(10rem, 1fr))">
-            {shadows.map((shadow) => (
-              <Box
-                borderColor="app.border"
-                borderWidth="1px"
-                key={shadow}
-                px="4"
-                py="10"
-                shadow={shadow}
-                textAlign="center"
-              >
-                <Code>{shadow}</Code>
+                <Code>{edge.token}</Code>
+                <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide" pt="2">
+                  {edge.note}
+                </Text>
               </Box>
             ))}
           </Grid>
         </DocsSection>
       </Stack>
-    </Container>
+    </PageFrame>
   )
 }
