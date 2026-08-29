@@ -240,7 +240,7 @@ function webPackageJson(withApi: boolean) {
       '@emotion/react': '^11.14.0',
       '@tanstack/react-query': '^5.102.8',
       '@tanstack/react-router': '^1.170.32',
-      '@tanstack/react-router-with-query': '^1.130.17',
+      '@tanstack/react-router-ssr-query': '^1.167.2',
       '@tanstack/react-start': '^1.168.49',
       nitro: '3.0.260610-beta',
       'next-themes': '^0.4.6',
@@ -256,6 +256,7 @@ function webPackageJson(withApi: boolean) {
       '@types/react': '^19.2.0',
       '@types/react-dom': '^19.2.0',
       '@vitejs/plugin-react': '^6.1.0',
+      'code-inspector-plugin': '^2.0.8',
       vite: '^8.2.2',
     },
   };

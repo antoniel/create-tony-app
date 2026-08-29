@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-const { spawnSync } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { startPlaygroundSync } = require('./sync-playground');
 
 const root = path.resolve(__dirname, '..');
 const playground = path.join(root, '.playground');
@@ -32,9 +33,24 @@ if (create.status !== 0) {
 
 console.log(`\n  Playground ${projectPath}\n`);
 
-const dev = spawnSync('bun', ['dev'], {
+const stopSync = startPlaygroundSync(root, projectPath);
+const dev = spawn('bun', ['dev'], {
   cwd: projectPath,
   stdio: 'inherit',
 });
 
-process.exit(dev.status ?? 1);
+const shutdown = (code = 0) => {
+  stopSync();
+  if (dev.exitCode === null) {
+    dev.kill('SIGINT');
+  }
+  process.exit(code);
+};
+
+dev.on('exit', (code) => {
+  stopSync();
+  process.exit(code ?? 0);
+});
+
+process.on('SIGINT', () => shutdown(0));
+process.on('SIGTERM', () => shutdown(0));

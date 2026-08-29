@@ -11,54 +11,81 @@ const config = defineConfig({
       color: 'fg',
       margin: '0',
     },
+    'h1, h2, h3, h4': {
+      fontFamily: 'heading',
+      fontWeight: '500',
+      letterSpacing: '-0.035em',
+    },
   },
   theme: {
     tokens: {
       colors: {
         brand: {
-          50: { value: '#f3f0ff' },
-          100: { value: '#e9e2ff' },
-          200: { value: '#d5c7ff' },
-          300: { value: '#b8a0ff' },
-          400: { value: '#9872ff' },
-          500: { value: '#7c3aed' },
-          600: { value: '#6d28d9' },
-          700: { value: '#5b21b6' },
-          800: { value: '#4c1d95' },
-          900: { value: '#3f1a78' },
-          950: { value: '#27104f' },
+          50: { value: '#f6f6f6' },
+          100: { value: '#e8e8e8' },
+          200: { value: '#d2d2d2' },
+          300: { value: '#b0b0b0' },
+          400: { value: '#7a7a7a' },
+          500: { value: '#2a2a2a' },
+          600: { value: '#1a1a1a' },
+          700: { value: '#111111' },
+          800: { value: '#0a0a0a' },
+          900: { value: '#050505' },
+          950: { value: '#000000' },
         },
       },
       fonts: {
-        body: { value: 'Inter, ui-sans-serif, system-ui, sans-serif' },
-        heading: { value: 'Inter, ui-sans-serif, system-ui, sans-serif' },
+        heading: { value: '"Inter Tight", Helvetica, Arial, sans-serif' },
+        body: { value: '"Inter Tight", Helvetica, Arial, sans-serif' },
+        mono: { value: '"IBM Plex Mono", ui-monospace, SFMono-Regular, monospace' },
+      },
+      radii: {
+        none: { value: '0' },
+        sm: { value: '0' },
+        md: { value: '0' },
+        lg: { value: '0' },
+        xl: { value: '0' },
+        '2xl': { value: '0' },
+        '3xl': { value: '0' },
+        '4xl': { value: '0' },
+      },
+      shadows: {
+        xs: { value: 'none' },
+        sm: { value: 'none' },
+        md: { value: 'none' },
+        lg: { value: 'none' },
+        xl: { value: 'none' },
       },
     },
     semanticTokens: {
       colors: {
         app: {
           bg: {
-            value: { _light: '{colors.gray.50}', _dark: '{colors.gray.950}' },
+            value: { _light: '#f4f4f4', _dark: '#0a0a0a' },
           },
           surface: {
-            value: { _light: '{colors.white}', _dark: '{colors.gray.900}' },
+            value: { _light: '#ffffff', _dark: '#111111' },
           },
           border: {
-            value: { _light: '{colors.gray.200}', _dark: '{colors.gray.800}' },
+            value: { _light: '#e2e2e2', _dark: '#2a2a2a' },
           },
         },
         brand: {
-          solid: { value: '{colors.brand.600}' },
-          contrast: { value: '{colors.white}' },
+          solid: {
+            value: { _light: '{colors.brand.800}', _dark: '{colors.white}' },
+          },
+          contrast: {
+            value: { _light: '{colors.white}', _dark: '{colors.black}' },
+          },
           fg: {
-            value: { _light: '{colors.brand.700}', _dark: '{colors.brand.300}' },
+            value: { _light: '{colors.brand.800}', _dark: '{colors.white}' },
           },
           muted: { value: '{colors.brand.100}' },
           subtle: {
-            value: { _light: '{colors.brand.50}', _dark: '{colors.brand.950}' },
+            value: { _light: '{colors.brand.50}', _dark: '{colors.brand.900}' },
           },
           emphasized: { value: '{colors.brand.200}' },
-          focusRing: { value: '{colors.brand.500}' },
+          focusRing: { value: '{colors.brand.700}' },
         },
       },
     },

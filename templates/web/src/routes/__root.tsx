@@ -1,12 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { Box, Container, Flex, Link as ChakraLink, Text } from '@chakra-ui/react'
-import {
-  HeadContent,
-  Link,
-  Outlet,
-  Scripts,
-  createRootRouteWithContext,
-} from '@tanstack/react-router'
+import { Box, Flex } from '@chakra-ui/react'
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
+import { AppSidebar } from '../components/app-sidebar'
 import { Provider } from '../components/ui/provider'
 
 export const Route = createRootRouteWithContext<{
@@ -18,6 +13,14 @@ export const Route = createRootRouteWithContext<{
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'Tony App' },
     ],
+    links: [
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:ital,wght@0,400;0,500;0,600;1,400&display=swap',
+      },
+    ],
   }),
   shellComponent: RootDocument,
   component: RootComponent,
@@ -25,21 +28,12 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   return (
-    <>
-      <Box as="header" borderBottomWidth="1px" borderColor="app.border">
-        <Container maxW="6xl" py="4">
-          <Flex align="center" justify="space-between">
-            <ChakraLink asChild colorPalette="brand" fontWeight="bold">
-              <Link to="/">Tony App</Link>
-            </ChakraLink>
-            <Text color="fg.muted" fontSize="sm">
-              Bun · Turborepo · TanStack Start
-            </Text>
-          </Flex>
-        </Container>
+    <Flex direction={{ base: 'column', md: 'row' }} minH="100dvh">
+      <AppSidebar />
+      <Box as="main" flex="1" minW="0">
+        <Outlet />
       </Box>
-      <Outlet />
-    </>
+    </Flex>
   )
 }
 

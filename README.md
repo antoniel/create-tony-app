@@ -46,4 +46,6 @@ Matching web modules expose React Query options from `*.service.ts` files. Reque
 
 Web styling uses Chakra UI with a generated provider and customizable system theme. Brand tokens, semantic surface tokens, global styles, and light/dark color values live in `apps/web/src/theme/index.ts`.
 
+Web projects include [Code Inspector](https://inspector.fe-dev.cn/en/) in Vite. In `bun dev`, hold Option+Shift (Mac) or Alt+Shift (Windows) and click a DOM node to open the source file in the editor.
+
 Web projects also include nuqs for type-safe URL state. Its TanStack Router adapter is mounted in the shared provider, with a small generated example showing query-string state alongside Chakra components.
