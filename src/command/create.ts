@@ -27,6 +27,7 @@ export async function create(projectName?: string) {
     await generateProject(projectPath, selection);
     spinner.text = 'Installing dependencies with Bun...';
     await execa('bun', ['install'], { cwd: projectPath });
+    await execa('git', ['init'], { cwd: projectPath });
     spinner.text = 'Formatting the generated project...';
     await execa('bun', ['run', 'format'], { cwd: projectPath });
     spinner.succeed(`Created ${chalk.bold.green(selection.projectName)}`);

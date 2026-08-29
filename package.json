@@ -10,6 +10,7 @@
   "scripts": {
     "prepare": "tsc -p tsconfig.json",
     "build": "tsc -p tsconfig.json",
+    "dev": "node scripts/dev.js",
     "start": "tsc -p tsconfig.json --watch",
     "release": "np"
   },
