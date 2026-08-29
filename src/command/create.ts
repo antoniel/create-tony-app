@@ -30,6 +30,10 @@ export async function create(projectName?: string) {
     await execa('git', ['init'], { cwd: projectPath });
     spinner.text = 'Formatting the generated project...';
     await execa('bun', ['run', 'format'], { cwd: projectPath });
+    if (selection.features.includes('database')) {
+      spinner.text = 'Starting PGlite...';
+      await execa('bun', ['run', 'db:ensure'], { cwd: projectPath });
+    }
     spinner.succeed(`Created ${chalk.bold.green(selection.projectName)}`);
   } catch (error) {
     spinner.fail('Failed to create project');
@@ -80,9 +84,7 @@ async function generateProject(projectPath: string, selection: ProjectSelection)
 async function writeRootPackageJson(projectPath: string, selection: ProjectSelection) {
   const databaseScripts = selection.features.includes('database')
     ? {
-        'db:up': 'docker compose up -d --wait',
-        'db:down': 'docker compose down',
-        'db:logs': 'docker compose logs -f postgres',
+        'db:ensure': 'bun run --filter @app/database db:ensure',
         'db:generate': 'bun run --filter @app/database db:generate',
         'db:migrate': 'bun run --filter @app/database db:migrate',
         'db:push': 'bun run --filter @app/database db:push',
@@ -143,9 +145,9 @@ async function writeConditionalFiles(projectPath: string, features: Feature[]) {
       path.join(projectPath, 'packages/database/.env.example'),
       path.join(projectPath, '.env.example')
     );
-    await fs.move(
-      path.join(projectPath, 'packages/database/docker-compose.yml'),
-      path.join(projectPath, 'docker-compose.yml')
+    await fs.copy(
+      path.join(projectPath, '.env.example'),
+      path.join(projectPath, '.env')
     );
     await appendDatabaseReadme(projectPath);
   }
@@ -196,16 +198,11 @@ async function appendDatabaseReadme(projectPath: string) {
     `
 ## Database
 
-Copy \`.env.example\` to \`.env\`. The defaults match the generated PostgreSQL Compose service.
-
-Start and stop PostgreSQL from the workspace root:
-
-- \`bun run db:up\` — start PostgreSQL and wait for its healthcheck
-- \`bun run db:down\` — stop PostgreSQL
-- \`bun run db:logs\` — follow PostgreSQL logs
+The workspace uses PGlite, an in-process Postgres. It starts on first create and again whenever the API imports \`@app/database\`. Data lives in \`packages/database/data\` and does not need Docker.
 
 Run Drizzle from the workspace root:
 
+- \`bun run db:ensure\` — create the PGlite data directory and starter tables
 - \`bun run db:generate\` — generate migrations from the schema
 - \`bun run db:migrate\` — apply generated migrations
 - \`bun run db:push\` — push schema changes directly
@@ -296,14 +293,15 @@ function databasePackageJson() {
       build: 'bun build src/index.ts --target bun --outdir dist',
       lint: 'oxlint .',
       typecheck: 'tsc --noEmit',
+      'db:ensure': 'bun --env-file=../../.env src/index.ts',
       'db:generate': 'bun --env-file=../../.env x drizzle-kit generate',
       'db:migrate': 'bun --env-file=../../.env x drizzle-kit migrate',
       'db:push': 'bun --env-file=../../.env x drizzle-kit push',
       'db:studio': 'bun --env-file=../../.env x drizzle-kit studio',
     },
     dependencies: {
+      '@electric-sql/pglite': '^0.5.8',
       'drizzle-orm': '^0.45.2',
-      postgres: '^3.4.8',
     },
     devDependencies: {
       'drizzle-kit': '^0.31.10',
@@ -323,9 +321,8 @@ function printNextSteps(projectName: string, features: Feature[]) {
   console.log(`\n  ${chalk.dim('$')} cd ${projectName}`);
   console.log(`  ${chalk.dim('$')} bun dev`);
   if (features.includes('database')) {
-    console.log(`\n  Copy ${chalk.cyan('.env.example')} to ${chalk.cyan('.env')}.`);
-    console.log(`  Run ${chalk.cyan('bun run db:up')} to start PostgreSQL.`);
-    console.log(`  Then run ${chalk.cyan('bun run db:push')} to apply the schema.`);
+    console.log(`\n  PGlite is ready in ${chalk.cyan('packages/database/data')}.`);
+    console.log(`  Use ${chalk.cyan('bun run db:studio')} to browse it.`);
   }
   console.log();
 }

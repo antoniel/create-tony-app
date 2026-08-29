@@ -1,14 +1,18 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
+import { sql } from 'drizzle-orm'
+import { drizzle } from 'drizzle-orm/pglite'
+import { dataDir } from './data-dir'
 import * as schema from './schema'
 
-const connectionString = process.env.DATABASE_URL
+export const db = drizzle(dataDir, { schema })
 
-if (!connectionString) {
-  throw new Error('DATABASE_URL is required')
-}
+await db.execute(sql`
+  CREATE TABLE IF NOT EXISTS "users" (
+    "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+    "name" text NOT NULL,
+    "email" text NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT "users_email_unique" UNIQUE("email")
+  )
+`)
 
-const client = postgres(connectionString)
-
-export const db = drizzle(client, { schema })
 export * from './schema'
