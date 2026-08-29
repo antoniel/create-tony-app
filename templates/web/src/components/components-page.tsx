@@ -8,27 +8,21 @@ export function ComponentsPage() {
   return (
     <Container maxW="6xl" py={{ base: '10', md: '16' }}>
       <Stack gap="16">
-        <Stack
-          borderBottomWidth="1px"
-          borderColor="app.border"
-          gap="5"
-          maxW="3xl"
-          pb="10"
-        >
+        <Stack gap="5" maxW="3xl">
           <Badge colorPalette="brand" variant="subtle" w="fit-content">
-            SKU / UI-02
+            ui-02
           </Badge>
           <Heading fontSize={{ base: '4xl', md: '6xl' }} fontWeight="500" lineHeight="0.95">
-            Add to bag. Or don’t.
+            Steel fill. Then get out of the way.
           </Heading>
           <Text color="fg.muted" fontSize="lg">
-            Solid is checkout. Outline is a filter. Ghost stays out of the way.
+            Solid is the tool. Outline is a port label. Ghost stays off the plate.
           </Text>
         </Stack>
 
         <DocsSection
-          copy="One black fill. Everything else is a switch on the tile."
-          kicker="Controls"
+          copy="One dark fill. Everything else is a switch on the case."
+          kicker="controls"
           title="Buttons"
         >
           <HStack gap="3" wrap="wrap">
@@ -41,8 +35,8 @@ export function ComponentsPage() {
         </DocsSection>
 
         <DocsSection
-          copy="SKU marks and stock states. Keep them small and mono."
-          kicker="Controls"
+          copy="Stamped markings. Small, mono, low contrast."
+          kicker="controls"
           title="Badges"
         >
           <HStack gap="3" wrap="wrap">
@@ -59,8 +53,8 @@ export function ComponentsPage() {
         </DocsSection>
 
         <DocsSection
-          copy="Filters and views belong in the query string, like a catalog URL."
-          kicker="State"
+          copy="Filters live in the query string, like a layer switch."
+          kicker="state"
           title="URL state"
         >
           <Stack gap="3">

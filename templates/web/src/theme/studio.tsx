@@ -1,5 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react'
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { buildSystem, themeSource } from './build'
 import { defaultDraft, type ThemeDraft } from './draft'
 
@@ -16,6 +16,10 @@ export function ThemeStudioProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState(defaultDraft)
   const system = useMemo(() => buildSystem(draft), [draft])
   const source = useMemo(() => themeSource(draft), [draft])
+
+  useEffect(() => {
+    setDraft(defaultDraft)
+  }, [defaultDraft])
 
   return (
     <ThemeStudioContext.Provider value={{ draft, source, setDraft, reset: () => setDraft(defaultDraft) }}>

@@ -2,26 +2,26 @@ import { Badge, Box, Code, Container, Flex, Grid, Heading, HStack, Stack, Text }
 import { DocsSection } from './docs-section'
 
 const brandScale = [
-  ['50', '#f6f6f6'],
-  ['100', '#e8e8e8'],
-  ['200', '#d2d2d2'],
-  ['300', '#b0b0b0'],
-  ['400', '#7a7a7a'],
-  ['500', '#2a2a2a'],
-  ['600', '#1a1a1a'],
-  ['700', '#111111'],
-  ['800', '#0a0a0a'],
-  ['900', '#050505'],
-  ['950', '#000000'],
+  ['50', '#f3f3f2'],
+  ['100', '#e4e4e2'],
+  ['200', '#cfcfcd'],
+  ['300', '#b0b0ad'],
+  ['400', '#8a8a86'],
+  ['500', '#5c5c59'],
+  ['600', '#3f3f3c'],
+  ['700', '#2a2a28'],
+  ['800', '#1a1a18'],
+  ['900', '#111110'],
+  ['950', '#0a0a09'],
 ] as const
 
 const semanticColors = [
-  { token: 'app.bg', swatch: 'app.bg', note: 'Floor' },
-  { token: 'app.surface', swatch: 'app.surface', note: 'Tile / card' },
-  { token: 'app.border', swatch: 'app.border', note: 'Join' },
-  { token: 'brand.solid', swatch: 'brand.solid', note: 'Buy / primary' },
-  { token: 'brand.fg', swatch: 'brand.fg', note: 'Ink' },
-  { token: 'brand.subtle', swatch: 'brand.subtle', note: 'Hover bed' },
+  { token: 'app.bg', swatch: 'app.bg', note: 'Bench' },
+  { token: 'app.surface', swatch: 'app.surface', note: 'Case' },
+  { token: 'app.well', swatch: 'app.well', note: 'Faceplate' },
+  { token: 'app.border', swatch: 'app.border', note: 'Seam' },
+  { token: 'app.accent', swatch: 'app.accent', note: 'Power' },
+  { token: 'brand.solid', swatch: 'brand.solid', note: 'Steel' },
 ] as const
 
 const spaces = ['1', '2', '3', '4', '5', '6', '8', '10', '12', '16'] as const
@@ -33,35 +33,29 @@ export function DesignSystemPage({ status }: { status?: string }) {
   return (
     <Container maxW="6xl" py={{ base: '10', md: '16' }}>
       <Stack gap="16">
-        <Stack
-          borderBottomWidth="1px"
-          borderColor="app.border"
-          gap="5"
-          maxW="3xl"
-          pb="10"
-        >
+        <Stack gap="5" maxW="3xl">
           <HStack gap="3" wrap="wrap">
             <Badge colorPalette="brand" variant="subtle">
-              SKU / DS-01
+              ds-01
             </Badge>
             {status ? (
               <Badge colorPalette="brand" variant="outline">
-                API {status}
+                api {status}
               </Badge>
             ) : null}
           </HStack>
           <Heading fontSize={{ base: '4xl', md: '6xl' }} fontWeight="500" lineHeight="0.95">
-            Blocks. Price. Nothing else.
+            Steel. Seam. One light.
           </Heading>
           <Text color="fg.muted" fontSize="lg">
-            Clean brutalism for a storefront that reads like a dashboard. Black CTA, square tiles,
-            mono SKUs. Tokens in <Code>apps/web/src/theme/index.ts</Code>.
+            Machined case on a bench. Graphite faceplate, hairline joins, orange only where you press.
+            Tokens in <Code>apps/web/src/theme/index.ts</Code>.
           </Text>
         </Stack>
 
         <DocsSection
-          copy="Ink, not color. Brand is a gray ramp so the product stays the loudest object on the page."
-          kicker="Color"
+          copy="Brand is brushed metal. The orange is a separate accent, not a ramp."
+          kicker="color"
           title="Brand scale"
         >
           <Grid gap="0" templateColumns="repeat(auto-fill, minmax(7rem, 1fr))">
@@ -76,8 +70,8 @@ export function DesignSystemPage({ status }: { status?: string }) {
         </DocsSection>
 
         <DocsSection
-          copy="White tiles on a gray floor. Dark mode inverts the chassis. Borders are joins, not frames."
-          kicker="Color"
+          copy="Bench, case, recessed plate. Dark mode keeps the same stack of metals."
+          kicker="color"
           title="Semantic surfaces"
         >
           <Grid gap="0" templateColumns="repeat(auto-fill, minmax(14rem, 1fr))">
@@ -96,8 +90,8 @@ export function DesignSystemPage({ status }: { status?: string }) {
         </DocsSection>
 
         <DocsSection
-          copy="Dashboard density with e-comm air. 1 is 4px, 4 is 16px, 8 is 32px."
-          kicker="Space"
+          copy="Tight pitch. 1 is 4px, 4 is 16px, 8 is 32px."
+          kicker="space"
           title="Spacing scale"
         >
           <Stack gap="3">
@@ -111,8 +105,8 @@ export function DesignSystemPage({ status }: { status?: string }) {
         </DocsSection>
 
         <DocsSection
-          copy="Inter Tight for UI and titles. IBM Plex Mono for SKUs, indexes, and readouts."
-          kicker="Type"
+          copy="Inter Tight for the case. IBM Plex Mono for stamped markings."
+          kicker="type"
           title="Type scale"
         >
           <Stack gap="5">
@@ -127,7 +121,7 @@ export function DesignSystemPage({ status }: { status?: string }) {
               >
                 <Code minW="10">{size}</Code>
                 <Text fontSize={size} fontWeight="500" letterSpacing="-0.03em" lineHeight="1">
-                  The quick brown fox
+                  the quick brown fox
                 </Text>
               </Flex>
             ))}
@@ -135,8 +129,8 @@ export function DesignSystemPage({ status }: { status?: string }) {
         </DocsSection>
 
         <DocsSection
-          copy="Zero radius. Zero shadow. A 1px join is the only edge."
-          kicker="Shape"
+          copy="A 6px machine radius. Elevation is a seam or a hairline, not a glow."
+          kicker="shape"
           title="Radius and elevation"
         >
           <Grid gap="0" templateColumns="repeat(auto-fill, minmax(10rem, 1fr))">

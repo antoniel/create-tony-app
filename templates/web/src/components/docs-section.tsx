@@ -1,4 +1,4 @@
-import { Heading, Separator, Stack, Text } from '@chakra-ui/react'
+import { Heading, Stack, Text } from '@chakra-ui/react'
 import type { ReactNode } from 'react'
 
 export function DocsSection({
@@ -15,15 +15,14 @@ export function DocsSection({
   return (
     <Stack gap="6">
       <Stack gap="2" maxW="3xl">
-        <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.14em">
-          {kicker.toUpperCase()}
+        <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.16em">
+          {kicker}
         </Text>
         <Heading fontSize="2xl" fontWeight="500">
           {title}
         </Heading>
         <Text color="fg.muted">{copy}</Text>
       </Stack>
-      <Separator borderColor="app.border" />
       {children}
     </Stack>
   )

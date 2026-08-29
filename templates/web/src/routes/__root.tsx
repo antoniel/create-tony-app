@@ -1,7 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { Box, Flex } from '@chakra-ui/react'
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
-import { AppSidebar } from '../components/app-sidebar'
+import { AppShell } from '../components/app-shell'
 import { Provider } from '../components/ui/provider'
 
 export const Route = createRootRouteWithContext<{
@@ -28,12 +27,9 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   return (
-    <Flex direction={{ base: 'column', md: 'row' }} minH="100dvh">
-      <AppSidebar />
-      <Box as="main" flex="1" minW="0">
-        <Outlet />
-      </Box>
-    </Flex>
+    <AppShell>
+      <Outlet />
+    </AppShell>
   )
 }
 

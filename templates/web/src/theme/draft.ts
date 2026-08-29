@@ -8,7 +8,9 @@ export interface ThemeDraft {
     bg: { light: string; dark: string }
     surface: { light: string; dark: string }
     border: { light: string; dark: string }
+    well: { light: string; dark: string }
   }
+  accent: string
   fonts: {
     heading: string
     body: string
@@ -19,27 +21,29 @@ export interface ThemeDraft {
 
 export const defaultDraft: ThemeDraft = {
   brand: {
-    '50': '#f6f6f6',
-    '100': '#e8e8e8',
-    '200': '#d2d2d2',
-    '300': '#b0b0b0',
-    '400': '#7a7a7a',
-    '500': '#2a2a2a',
-    '600': '#1a1a1a',
-    '700': '#111111',
-    '800': '#0a0a0a',
-    '900': '#050505',
-    '950': '#000000',
+    '50': '#f3f3f2',
+    '100': '#e4e4e2',
+    '200': '#cfcfcd',
+    '300': '#b0b0ad',
+    '400': '#8a8a86',
+    '500': '#5c5c59',
+    '600': '#3f3f3c',
+    '700': '#2a2a28',
+    '800': '#1a1a18',
+    '900': '#111110',
+    '950': '#0a0a09',
   },
   surfaces: {
-    bg: { light: '#f4f4f4', dark: '#0a0a0a' },
-    surface: { light: '#ffffff', dark: '#111111' },
-    border: { light: '#e2e2e2', dark: '#2a2a2a' },
+    bg: { light: '#d8d6d1', dark: '#1c1c1b' },
+    surface: { light: '#efece7', dark: '#2a2a28' },
+    border: { light: '#c2bfb8', dark: '#3d3d3a' },
+    well: { light: '#2c2f32', dark: '#161718' },
   },
+  accent: '#ff5418',
   fonts: {
     heading: '"Inter Tight", Helvetica, Arial, sans-serif',
     body: '"Inter Tight", Helvetica, Arial, sans-serif',
     mono: '"IBM Plex Mono", ui-monospace, SFMono-Regular, monospace',
   },
-  radius: '0',
+  radius: '6px',
 }

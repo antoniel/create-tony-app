@@ -12,7 +12,7 @@ const fontPresets = [
   { label: 'System', value: 'ui-sans-serif, system-ui, sans-serif' },
 ] as const
 
-const radiusPresets = ['0', '2px', '4px', '8px', '12px', '999px'] as const
+const radiusPresets = ['0', '2px', '4px', '6px', '8px', '12px'] as const
 
 export function ThemeEditorPage() {
   const { draft, source, setDraft, reset } = useThemeStudio()
@@ -27,16 +27,16 @@ export function ThemeEditorPage() {
   return (
     <Container maxW="6xl" py={{ base: '10', md: '16' }}>
       <Stack gap="16">
-        <Stack borderBottomWidth="1px" borderColor="app.border" gap="5" maxW="3xl" pb="10">
+        <Stack gap="5" maxW="3xl">
           <Badge colorPalette="brand" variant="subtle" w="fit-content">
-            SKU / TH-03
+            th-03
           </Badge>
           <Heading fontSize={{ base: '4xl', md: '6xl' }} fontWeight="500" lineHeight="0.95">
             Tune it. Then take the file.
           </Heading>
           <Text color="fg.muted" fontSize="lg">
-            Every control rebuilds the Chakra system. Sidebar, pages, and buttons update now. Copy
-            the file into <Code>apps/web/src/theme/index.ts</Code>.
+            Every control rebuilds the Chakra system. Case, faceplate, and the one accent update now.
+            Copy the file into <Code>apps/web/src/theme/index.ts</Code>.
           </Text>
           <Flex gap="3" wrap="wrap">
             <Button colorPalette="brand" onClick={copy} variant="solid">
@@ -49,11 +49,11 @@ export function ThemeEditorPage() {
         </Stack>
 
         <DocsSection
-          copy="Brand is the gray-to-ink ramp behind CTAs and colorPalette=brand."
-          kicker="Color"
+          copy="Brand is the metal ramp behind CTAs and colorPalette=brand."
+          kicker="color"
           title="Brand scale"
         >
-          <Grid gap="0" templateColumns="repeat(auto-fill, minmax(11rem, 1fr))">
+          <Grid gap="3" templateColumns="repeat(auto-fill, minmax(11rem, 1fr))">
             {brandSteps.map((step) => (
               <ColorField
                 key={step}
@@ -71,11 +71,11 @@ export function ThemeEditorPage() {
         </DocsSection>
 
         <DocsSection
-          copy="Paper, tile, and join. Light and dark are both in the file."
-          kicker="Color"
+          copy="Bench, case, seam, and the graphite plate. Light and dark are both in the file."
+          kicker="color"
           title="Surfaces"
         >
-          <Grid gap="0" templateColumns="repeat(auto-fill, minmax(14rem, 1fr))">
+          <Grid gap="3" templateColumns="repeat(auto-fill, minmax(14rem, 1fr))">
             <ColorField
               label="app.bg / light"
               value={draft.surfaces.bg.light}
@@ -106,12 +106,27 @@ export function ThemeEditorPage() {
               value={draft.surfaces.border.dark}
               onChange={(value) => patchSurface(setDraft, 'border', 'dark', value)}
             />
+            <ColorField
+              label="app.well / light"
+              value={draft.surfaces.well.light}
+              onChange={(value) => patchSurface(setDraft, 'well', 'light', value)}
+            />
+            <ColorField
+              label="app.well / dark"
+              value={draft.surfaces.well.dark}
+              onChange={(value) => patchSurface(setDraft, 'well', 'dark', value)}
+            />
+            <ColorField
+              label="app.accent"
+              value={draft.accent}
+              onChange={(value) => setDraft((current) => ({ ...current, accent: value }))}
+            />
           </Grid>
         </DocsSection>
 
         <DocsSection
           copy="Pick a preset or type a stack. Load the font in __root if it is not already there."
-          kicker="Type"
+          kicker="type"
           title="Fonts"
         >
           <Stack gap="4">
@@ -163,8 +178,8 @@ export function ThemeEditorPage() {
         </DocsSection>
 
         <DocsSection
-          copy="One value writes every radius token. 0 keeps the square storefront."
-          kicker="Shape"
+          copy="One value writes every radius token. 6px is a machined edge."
+          kicker="shape"
           title="Radius"
         >
           <Flex gap="2" wrap="wrap">
@@ -183,7 +198,7 @@ export function ThemeEditorPage() {
 
         <DocsSection
           copy="Paste this over apps/web/src/theme/index.ts in the generated app."
-          kicker="Export"
+          kicker="export"
           title="Chakra file"
         >
           <Stack gap="4">
@@ -192,7 +207,7 @@ export function ThemeEditorPage() {
             </Button>
             <Box
               as="pre"
-              bg="app.surface"
+              bg="app.bg"
               borderColor="app.border"
               borderWidth="1px"
               color="fg"
@@ -240,7 +255,7 @@ function ColorField({
 
   return (
     <Stack borderColor="app.border" borderWidth="1px" gap="3" p="3">
-      <Box bg={value} borderColor="app.border" borderWidth="1px" h="14" />
+      <Box bg={value} h="14" />
       <Text fontFamily="mono" fontSize="2xs">
         {label}
       </Text>
