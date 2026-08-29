@@ -1,16 +1,21 @@
 import { createSystem, defaultConfig, defineConfig } from '@chakra-ui/react'
 import { brandSteps, defaultDraft, type ThemeDraft } from './draft'
 
+function px(value: number) {
+  return `${Math.max(0, value)}px`
+}
+
 function radiusScale(radius: string) {
+  const n = Number.parseInt(radius, 10) || 12
   return {
     none: { value: '0' },
-    sm: { value: radius },
-    md: { value: radius },
-    lg: { value: radius },
-    xl: { value: radius },
-    '2xl': { value: radius },
-    '3xl': { value: radius },
-    '4xl': { value: radius },
+    sm: { value: px(Math.max(4, n - 4)) },
+    md: { value: px(n) },
+    lg: { value: px(n + 4) },
+    xl: { value: px(n + 8) },
+    '2xl': { value: px(n + 12) },
+    '3xl': { value: px(n + 20) },
+    '4xl': { value: px(n + 28) },
   }
 }
 
@@ -29,7 +34,7 @@ export function buildThemeConfig(draft: ThemeDraft) {
       'h1, h2, h3, h4': {
         fontFamily: 'heading',
         fontWeight: '500',
-        letterSpacing: '-0.03em',
+        letterSpacing: '-0.02em',
       },
     },
     theme: {
@@ -45,11 +50,14 @@ export function buildThemeConfig(draft: ThemeDraft) {
         },
         radii: radiusScale(draft.radius),
         shadows: {
-          xs: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.35)' },
-          sm: { value: '0 1px 0 rgba(0, 0, 0, 0.06)' },
-          md: { value: '0 8px 24px rgba(0, 0, 0, 0.08)' },
-          lg: { value: '0 16px 32px rgba(0, 0, 0, 0.1)' },
-          xl: { value: '0 24px 40px rgba(0, 0, 0, 0.12)' },
+          xs: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.55)' },
+          sm: {
+            value:
+              'inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(90, 96, 102, 0.16), inset 0 2px 8px rgba(0, 0, 0, 0.04)',
+          },
+          md: { value: 'inset 0 2px 10px rgba(0, 0, 0, 0.08)' },
+          lg: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.4)' },
+          xl: { value: 'none' },
         },
       },
       semanticTokens: {
@@ -124,7 +132,7 @@ const config = defineConfig({
     'h1, h2, h3, h4': {
       fontFamily: 'heading',
       fontWeight: '500',
-      letterSpacing: '-0.03em',
+      letterSpacing: '-0.02em',
     },
   },
   theme: {
@@ -142,20 +150,20 @@ ${brand}
       },
       radii: {
         none: { value: '0' },
-        sm: { value: ${quote(draft.radius)} },
-        md: { value: ${quote(draft.radius)} },
-        lg: { value: ${quote(draft.radius)} },
-        xl: { value: ${quote(draft.radius)} },
-        '2xl': { value: ${quote(draft.radius)} },
-        '3xl': { value: ${quote(draft.radius)} },
-        '4xl': { value: ${quote(draft.radius)} },
+        sm: { value: ${quote(radiusScale(draft.radius).sm.value)} },
+        md: { value: ${quote(radiusScale(draft.radius).md.value)} },
+        lg: { value: ${quote(radiusScale(draft.radius).lg.value)} },
+        xl: { value: ${quote(radiusScale(draft.radius).xl.value)} },
+        '2xl': { value: ${quote(radiusScale(draft.radius)['2xl'].value)} },
+        '3xl': { value: ${quote(radiusScale(draft.radius)['3xl'].value)} },
+        '4xl': { value: ${quote(radiusScale(draft.radius)['4xl'].value)} },
       },
       shadows: {
-        xs: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.35)' },
-        sm: { value: '0 1px 0 rgba(0, 0, 0, 0.06)' },
-        md: { value: '0 8px 24px rgba(0, 0, 0, 0.08)' },
-        lg: { value: '0 16px 32px rgba(0, 0, 0, 0.1)' },
-        xl: { value: '0 24px 40px rgba(0, 0, 0, 0.12)' },
+        xs: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.55)' },
+        sm: { value: 'inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(90, 96, 102, 0.16), inset 0 2px 8px rgba(0, 0, 0, 0.04)' },
+        md: { value: 'inset 0 2px 10px rgba(0, 0, 0, 0.08)' },
+        lg: { value: 'inset 0 1px 0 rgba(255, 255, 255, 0.4)' },
+        xl: { value: 'none' },
       },
     },
     semanticTokens: {

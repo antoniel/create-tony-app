@@ -5,10 +5,5 @@ import { defineConfig } from 'vite'
 import { nitro } from 'nitro/vite'
 
 export default defineConfig({
-  plugins: [
-    codeInspectorPlugin({ bundler: 'vite' }),
-    nitro(),
-    tanstackStart(),
-    viteReact(),
-  ],
+  plugins: [codeInspectorPlugin({ bundler: 'vite' }), nitro(), tanstackStart(), viteReact()],
 })

@@ -237,6 +237,7 @@ function webPackageJson(withApi: boolean) {
     dependencies: {
       ...(withApi ? { '@elysia/eden': '^1.4.10' } : {}),
       '@chakra-ui/react': '^3.36.1',
+      '@phosphor-icons/react': '^2.1.10',
       '@emotion/react': '^11.14.0',
       '@tanstack/react-query': '^5.102.8',
       '@tanstack/react-router': '^1.170.32',

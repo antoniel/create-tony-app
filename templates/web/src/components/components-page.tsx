@@ -1,4 +1,4 @@
-import { Badge, Button, Code, Container, Heading, HStack, Stack, Text } from '@chakra-ui/react'
+import { Badge, Box, Button, Code, Container, Heading, HStack, Stack, Text } from '@chakra-ui/react'
 import { DocsSection } from './docs-section'
 import { UrlStateExample } from './url-state-example'
 
@@ -8,23 +8,17 @@ export function ComponentsPage() {
   return (
     <Container maxW="6xl" py={{ base: '10', md: '16' }}>
       <Stack gap="16">
-        <Stack gap="5" maxW="3xl">
-          <Badge colorPalette="brand" variant="subtle" w="fit-content">
-            ui-02
-          </Badge>
-          <Heading fontSize={{ base: '4xl', md: '6xl' }} fontWeight="500" lineHeight="0.95">
-            Steel fill. Then get out of the way.
-          </Heading>
-          <Text color="fg.muted" fontSize="lg">
-            Solid is the tool. Outline is a port label. Ghost stays off the plate.
+        <Stack gap="4" maxW="2xl">
+          <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.16em">
+            02
           </Text>
+          <Heading fontSize={{ base: '3xl', md: '4xl' }} fontWeight="400" lineHeight="1.05">
+            bits
+          </Heading>
+          <Text color="fg.muted">solid is steel. outline is a port. ghost is off the plate.</Text>
         </Stack>
 
-        <DocsSection
-          copy="One dark fill. Everything else is a switch on the case."
-          kicker="controls"
-          title="Buttons"
-        >
+        <DocsSection copy="one dark fill. the rest is a thinner legend." kicker="ctrl" title="buttons">
           <HStack gap="3" wrap="wrap">
             {buttonVariants.map((variant) => (
               <Button colorPalette="brand" key={variant} variant={variant}>
@@ -32,13 +26,15 @@ export function ComponentsPage() {
               </Button>
             ))}
           </HStack>
+          <HStack gap="3" pt="2">
+            <Box bg="app.accent" borderRadius="full" boxSize="9" shadow="sm" />
+            <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.12em">
+              power
+            </Text>
+          </HStack>
         </DocsSection>
 
-        <DocsSection
-          copy="Stamped markings. Small, mono, low contrast."
-          kicker="controls"
-          title="Badges"
-        >
+        <DocsSection copy="etched, not stickered." kicker="ctrl" title="marks">
           <HStack gap="3" wrap="wrap">
             <Badge colorPalette="brand" variant="solid">
               solid
@@ -52,14 +48,10 @@ export function ComponentsPage() {
           </HStack>
         </DocsSection>
 
-        <DocsSection
-          copy="Filters live in the query string, like a layer switch."
-          kicker="state"
-          title="URL state"
-        >
+        <DocsSection copy="layer switch lives in the query string." kicker="state" title="url">
           <Stack gap="3">
             <Text color="fg.muted" fontFamily="mono" fontSize="xs">
-              Writes <Code>view</Code> to the URL.
+              writes <Code>view</Code>
             </Text>
             <UrlStateExample />
           </Stack>

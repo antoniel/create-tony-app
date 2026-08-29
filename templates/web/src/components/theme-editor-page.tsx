@@ -1,18 +1,16 @@
-import { Badge, Box, Button, Code, Container, Flex, Grid, Heading, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Code, Container, Flex, Grid, Heading, Stack, Text } from '@chakra-ui/react'
 import { useState, type ChangeEvent } from 'react'
 import { DocsSection } from './docs-section'
 import { brandSteps, type ThemeDraft } from '../theme/draft'
 import { useThemeStudio } from '../theme/studio'
 
 const fontPresets = [
-  { label: 'Inter Tight', value: '"Inter Tight", Helvetica, Arial, sans-serif' },
+  { label: 'Inter', value: '"Inter", Helvetica, Arial, sans-serif' },
   { label: 'IBM Plex Mono', value: '"IBM Plex Mono", ui-monospace, SFMono-Regular, monospace' },
-  { label: 'Space Grotesk', value: '"Space Grotesk", Helvetica, Arial, sans-serif' },
-  { label: 'Instrument Serif', value: '"Instrument Serif", "Times New Roman", serif' },
   { label: 'System', value: 'ui-sans-serif, system-ui, sans-serif' },
 ] as const
 
-const radiusPresets = ['0', '2px', '4px', '6px', '8px', '12px'] as const
+const radiusPresets = ['0', '8px', '12px', '16px', '20px'] as const
 
 export function ThemeEditorPage() {
   const { draft, source, setDraft, reset } = useThemeStudio()
@@ -28,15 +26,14 @@ export function ThemeEditorPage() {
     <Container maxW="6xl" py={{ base: '10', md: '16' }}>
       <Stack gap="16">
         <Stack gap="5" maxW="3xl">
-          <Badge colorPalette="brand" variant="subtle" w="fit-content">
-            th-03
-          </Badge>
-          <Heading fontSize={{ base: '4xl', md: '6xl' }} fontWeight="500" lineHeight="0.95">
-            Tune it. Then take the file.
+          <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="0.16em">
+            03
+          </Text>
+          <Heading fontSize={{ base: '3xl', md: '4xl' }} fontWeight="400" lineHeight="1.05">
+            tune
           </Heading>
-          <Text color="fg.muted" fontSize="lg">
-            Every control rebuilds the Chakra system. Case, faceplate, and the one accent update now.
-            Copy the file into <Code>apps/web/src/theme/index.ts</Code>.
+          <Text color="fg.muted">
+            rebuilds the system live. copy into <Code>apps/web/src/theme/index.ts</Code>
           </Text>
           <Flex gap="3" wrap="wrap">
             <Button colorPalette="brand" onClick={copy} variant="solid">
@@ -49,7 +46,7 @@ export function ThemeEditorPage() {
         </Stack>
 
         <DocsSection
-          copy="Brand is the metal ramp behind CTAs and colorPalette=brand."
+          copy="metal ramp behind colorPalette=brand."
           kicker="color"
           title="Brand scale"
         >
@@ -71,7 +68,7 @@ export function ThemeEditorPage() {
         </DocsSection>
 
         <DocsSection
-          copy="Bench, case, seam, and the graphite plate. Light and dark are both in the file."
+          copy="chassis, plate, seam, slot. light and dark in the file."
           kicker="color"
           title="Surfaces"
         >
@@ -178,7 +175,7 @@ export function ThemeEditorPage() {
         </DocsSection>
 
         <DocsSection
-          copy="One value writes every radius token. 6px is a machined edge."
+          copy="one value for every radius token. 4px is the machine edge."
           kicker="shape"
           title="Radius"
         >
