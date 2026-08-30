@@ -1,25 +1,18 @@
 import { Box, Code, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import { DocsSection, PageFrame, PageIntro } from './docs-section'
+import { brandSteps, defaultDraft } from '../theme/draft'
 
-const brandScale = [
-  ['50', '#f7f8f9'],
-  ['100', '#eef0f2'],
-  ['200', '#d4d8dc'],
-  ['300', '#b4bac0'],
-  ['400', '#8f969e'],
-  ['500', '#6f777f'],
-  ['600', '#565d64'],
-  ['700', '#3f4449'],
-  ['800', '#2a2e32'],
-  ['900', '#181b1e'],
-  ['950', '#0c0e10'],
-] as const
+const brandScale = brandSteps.map((step) => [step, defaultDraft.brand[step]] as const)
 
 const semanticColors = [
   { token: 'app.bg', swatch: 'app.bg', note: 'chassis' },
   { token: 'app.surface', swatch: 'app.surface', note: 'plate' },
   { token: 'app.well', swatch: 'app.well', note: 'slot' },
-  { token: 'app.border', swatch: 'app.border', note: 'seam' },
+  { token: 'app.border', swatch: 'app.border', note: 'hairline' },
+  { token: 'app.highlight', swatch: 'app.highlight', note: 'catch' },
+  { token: 'app.recess', swatch: 'app.recess', note: 'shade' },
+  { token: 'app.focus', swatch: 'app.focus', note: 'tab' },
+  { token: 'app.spot', swatch: 'app.spot', note: 'hit' },
   { token: 'app.accent', swatch: 'app.accent', note: 'power' },
   { token: 'brand.solid', swatch: 'brand.solid', note: 'steel' },
 ] as const
@@ -74,7 +67,14 @@ export function DesignSystemPage({ status }: { status?: string }) {
         >
           <Grid gap="0" templateColumns="repeat(auto-fill, minmax(7rem, 1fr))">
             {brandScale.map(([step, hex]) => (
-              <Stack borderColor="app.border" borderWidth="1px" gap="3" key={step} p="3">
+              <Stack
+                borderColor="app.border"
+                borderWidth="1px"
+                gap="3"
+                key={step}
+                p="3"
+                shadow="xs"
+              >
                 <Box aspectRatio="1" bg={`brand.${step}`} />
                 <Text fontFamily="mono" fontSize="2xs">{`brand.${step}`}</Text>
                 <Code fontSize="2xs">{hex}</Code>
@@ -86,7 +86,7 @@ export function DesignSystemPage({ status }: { status?: string }) {
         <DocsSection copy="same stack in dark. value, not hue." kicker="color" title="surfaces">
           <Grid gap="0" templateColumns="repeat(auto-fill, minmax(14rem, 1fr))">
             {semanticColors.map((color) => (
-              <Box borderColor="app.border" borderWidth="1px" key={color.token}>
+              <Box borderColor="app.border" borderWidth="1px" key={color.token} shadow="xs">
                 <Box bg={color.swatch} borderBottomWidth="1px" borderColor="app.border" h="24" />
                 <Stack gap="1" p="4">
                   <Code>{color.token}</Code>
@@ -126,7 +126,12 @@ export function DesignSystemPage({ status }: { status?: string }) {
                 pb="3"
               >
                 <Code minW="10">{role.size}</Code>
-                <Text fontSize={role.size} fontWeight="normal" letterSpacing="tight" lineHeight="none">
+                <Text
+                  fontSize={role.size}
+                  fontWeight="normal"
+                  letterSpacing="tight"
+                  lineHeight="none"
+                >
                   the quick brown fox
                 </Text>
                 <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide">
@@ -145,6 +150,7 @@ export function DesignSystemPage({ status }: { status?: string }) {
                 borderRadius={edge.token}
                 borderWidth="1px"
                 key={edge.token}
+                shadow="xs"
                 px="4"
                 py="10"
               >

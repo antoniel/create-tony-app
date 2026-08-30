@@ -1,7 +1,8 @@
 import { Box, Button, Code, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import { useState, type ChangeEvent } from 'react'
 import { DocsSection, PageFrame, PageIntro } from './docs-section'
-import { brandSteps, type ThemeDraft } from '../theme/draft'
+import { brandSteps, draftFromSeed } from '../theme/draft'
+import { normalizeHex } from '../theme/color'
 import { useThemeStudio } from '../theme/studio'
 
 const fontPresets = [
@@ -36,79 +37,47 @@ export function ThemeEditorPage() {
           </Flex>
         </PageIntro>
 
-        <DocsSection
-          copy="metal ramp behind colorPalette=brand."
-          kicker="color"
-          title="Brand scale"
-        >
-          <Grid gap="3" templateColumns="repeat(auto-fill, minmax(11rem, 1fr))">
-            {brandSteps.map((step) => (
-              <ColorField
-                key={step}
-                label={`brand.${step}`}
-                value={draft.brand[step]}
-                onChange={(value) =>
-                  setDraft((current) => ({
-                    ...current,
-                    brand: { ...current.brand, [step]: value },
-                  }))
+        <DocsSection copy="one seed. 50–950 and the chassis follow." kicker="color" title="seed">
+          <Grid gap="6" templateColumns="repeat(auto-fill, minmax(14rem, 1fr))">
+            <ColorField
+              label="seed · brand.500"
+              value={draft.seed}
+              onChange={(value) => {
+                const hex = normalizeHex(value)
+                if (!hex) {
+                  setDraft((current) => ({ ...current, seed: value }))
+                  return
                 }
-              />
+                setDraft((current) => draftFromSeed(hex, current))
+              }}
+            />
+            <ColorField
+              label="power · accent"
+              value={draft.accent}
+              onChange={(value) => setDraft((current) => ({ ...current, accent: value }))}
+            />
+          </Grid>
+          <Grid gap="3" pt="6" templateColumns="repeat(auto-fill, minmax(7rem, 1fr))">
+            {brandSteps.map((step) => (
+              <Swatch hex={draft.brand[step]} key={step} label={`brand.${step}`} />
             ))}
           </Grid>
         </DocsSection>
 
-        <DocsSection
-          copy="chassis, plate, seam, slot. light and dark in the file."
-          kicker="color"
-          title="Surfaces"
-        >
-          <Grid gap="3" templateColumns="repeat(auto-fill, minmax(14rem, 1fr))">
-            <ColorField
-              label="app.bg / light"
-              value={draft.surfaces.bg.light}
-              onChange={(value) => patchSurface(setDraft, 'bg', 'light', value)}
-            />
-            <ColorField
-              label="app.bg / dark"
-              value={draft.surfaces.bg.dark}
-              onChange={(value) => patchSurface(setDraft, 'bg', 'dark', value)}
-            />
-            <ColorField
-              label="app.surface / light"
-              value={draft.surfaces.surface.light}
-              onChange={(value) => patchSurface(setDraft, 'surface', 'light', value)}
-            />
-            <ColorField
-              label="app.surface / dark"
-              value={draft.surfaces.surface.dark}
-              onChange={(value) => patchSurface(setDraft, 'surface', 'dark', value)}
-            />
-            <ColorField
-              label="app.border / light"
-              value={draft.surfaces.border.light}
-              onChange={(value) => patchSurface(setDraft, 'border', 'light', value)}
-            />
-            <ColorField
-              label="app.border / dark"
-              value={draft.surfaces.border.dark}
-              onChange={(value) => patchSurface(setDraft, 'border', 'dark', value)}
-            />
-            <ColorField
-              label="app.well / light"
-              value={draft.surfaces.well.light}
-              onChange={(value) => patchSurface(setDraft, 'well', 'light', value)}
-            />
-            <ColorField
-              label="app.well / dark"
-              value={draft.surfaces.well.dark}
-              onChange={(value) => patchSurface(setDraft, 'well', 'dark', value)}
-            />
-            <ColorField
-              label="app.accent"
-              value={draft.accent}
-              onChange={(value) => setDraft((current) => ({ ...current, accent: value }))}
-            />
+        <DocsSection copy="white insert stays. metal is the seed. hairline, catch, shade." kicker="color" title="surfaces">
+          <Grid gap="3" templateColumns="repeat(auto-fill, minmax(11rem, 1fr))">
+            <Swatch hex={draft.surfaces.bg.light} label="app.bg / light" />
+            <Swatch hex={draft.surfaces.bg.dark} label="app.bg / dark" />
+            <Swatch hex={draft.surfaces.surface.light} label="app.surface / light" />
+            <Swatch hex={draft.surfaces.surface.dark} label="app.surface / dark" />
+            <Swatch hex={draft.surfaces.border.light} label="app.border / light" />
+            <Swatch hex={draft.surfaces.border.dark} label="app.border / dark" />
+            <Swatch hex={draft.surfaces.highlight.light} label="app.highlight / light" />
+            <Swatch hex={draft.surfaces.highlight.dark} label="app.highlight / dark" />
+            <Swatch hex={draft.surfaces.recess.light} label="app.recess / light" />
+            <Swatch hex={draft.surfaces.recess.dark} label="app.recess / dark" />
+            <Swatch hex={draft.surfaces.well.light} label="app.well / light" />
+            <Swatch hex={draft.surfaces.well.dark} label="app.well / dark" />
           </Grid>
         </DocsSection>
 
@@ -119,7 +88,7 @@ export function ThemeEditorPage() {
         >
           <Stack gap="4">
             {(['heading', 'body', 'mono'] as const).map((role) => (
-              <Stack borderColor="app.border" borderWidth="1px" gap="3" key={role} p="4">
+              <Stack borderColor="app.border" borderWidth="1px" gap="3" key={role} p="4" shadow="xs">
                 <Text fontFamily="mono" fontSize="2xs" letterSpacing="wide">
                   {role.toUpperCase()}
                 </Text>
@@ -182,6 +151,7 @@ export function ThemeEditorPage() {
               color="fg"
               fontFamily="mono"
               fontSize="xs"
+              shadow="xs"
               maxH="xl"
               overflow="auto"
               p="4"
@@ -196,19 +166,16 @@ export function ThemeEditorPage() {
   )
 }
 
-function patchSurface(
-  setDraft: (next: ThemeDraft | ((current: ThemeDraft) => ThemeDraft)) => void,
-  token: keyof ThemeDraft['surfaces'],
-  mode: 'light' | 'dark',
-  value: string,
-) {
-  setDraft((current) => ({
-    ...current,
-    surfaces: {
-      ...current.surfaces,
-      [token]: { ...current.surfaces[token], [mode]: value },
-    },
-  }))
+function Swatch({ hex, label }: { hex: string; label: string }) {
+  return (
+    <Stack borderColor="app.border" borderWidth="1px" gap="3" p="3" shadow="xs">
+      <Box bg={`[${hex}]`} h="14" />
+      <Text fontFamily="mono" fontSize="2xs">
+        {label}
+      </Text>
+      <Code fontSize="2xs">{hex}</Code>
+    </Stack>
+  )
 }
 
 function ColorField({
@@ -223,7 +190,7 @@ function ColorField({
   const hex = /^#([0-9a-fA-F]{6})$/.test(value) ? value : '#000000'
 
   return (
-    <Stack borderColor="app.border" borderWidth="1px" gap="3" p="3">
+    <Stack borderColor="app.border" borderWidth="1px" gap="3" p="3" shadow="xs">
       <Box bg={`[${value}]`} h="14" />
       <Text fontFamily="mono" fontSize="2xs">
         {label}

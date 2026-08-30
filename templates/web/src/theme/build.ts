@@ -1,10 +1,10 @@
 import { createSystem, defaultConfig, defineConfig } from '@chakra-ui/react'
+import { hexAlpha, mixHex } from './color'
 import { brandSteps, defaultDraft, type ThemeDraft } from './draft'
 
 const edgeRadius = '4px'
 const controlRadius = '8px'
 const plateRadius = '24px'
-const seam = 'inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(90, 96, 102, 0.16), inset 0 2px 8px rgba(0, 0, 0, 0.04)'
 
 function radii() {
   return {
@@ -19,46 +19,50 @@ function radii() {
   }
 }
 
-function shadows() {
+function edgeShadows(draft: ThemeDraft) {
   return {
-    sm: { value: seam },
+    xs: {
+      light: `inset 0 1px 0 ${hexAlpha(draft.surfaces.highlight.light, 0.9)}, inset 1px 0 0 ${hexAlpha(draft.surfaces.highlight.light, 0.55)}`,
+      dark: `inset 0 1px 0 ${hexAlpha('#ffffff', 0.08)}, inset 1px 0 0 ${hexAlpha('#ffffff', 0.04)}`,
+    },
+    sm: {
+      light: [
+        `inset 0 1px 0 ${draft.surfaces.highlight.light}`,
+        `inset 1px 0 0 ${draft.surfaces.highlight.light}`,
+        `0 0 0 1px ${hexAlpha(draft.surfaces.border.light, 0.7)}`,
+        `inset 0 -1px 0 ${hexAlpha(draft.surfaces.recess.light, 0.18)}`,
+      ].join(', '),
+      dark: [
+        `inset 0 1px 0 ${hexAlpha('#ffffff', 0.1)}`,
+        `inset 1px 0 0 ${hexAlpha('#ffffff', 0.05)}`,
+        `0 0 0 1px ${hexAlpha('#000000', 0.5)}`,
+        `inset 0 -1px 0 ${hexAlpha('#000000', 0.28)}`,
+      ].join(', '),
+    },
   }
 }
 
-function chassisGradient(highlight: string, mid: string, shade: string) {
-  return `linear-gradient(165deg, ${highlight} 0%, ${mid} 48%, ${shade} 100%)`
-}
+export const chassisImage =
+  'linear-gradient(180deg, var(--tony-colors-app-chassis-hi) 0%, var(--tony-colors-app-chassis-mid) 48%, var(--tony-colors-app-chassis-lo) 100%)'
 
-function mixHex(hex: string, toward: string, amount: number) {
-  const parse = (value: string) => {
-    const n = Number.parseInt(value.slice(1), 16)
-    return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as const
-  }
-  const [ar, ag, ab] = parse(hex)
-  const [br, bg, bb] = parse(toward)
-  const mix = (a: number, b: number) => Math.round(a + (b - a) * amount)
-  return `#${[mix(ar, br), mix(ag, bg), mix(ab, bb)].map((n) => n.toString(16).padStart(2, '0')).join('')}`
-}
-
-function chassisTone(draft: ThemeDraft, amount: number) {
+function chassisTone(draft: ThemeDraft) {
+  const lift = 0.03
+  const lightMid = draft.brand['50']
+  const darkMid = draft.brand['800']
   return {
     light: {
-      bg: mixHex(draft.surfaces.bg.light, '#ffffff', amount),
-      well: mixHex(draft.surfaces.well.light, '#ffffff', amount),
-      gradient: chassisGradient(
-        mixHex(draft.brand['50'], '#ffffff', amount),
-        mixHex(draft.surfaces.bg.light, '#ffffff', amount),
-        mixHex(draft.surfaces.well.light, '#ffffff', amount),
-      ),
+      bg: lightMid,
+      well: draft.brand['400'],
+      hi: mixHex(lightMid, '#ffffff', lift),
+      mid: lightMid,
+      lo: mixHex(lightMid, '#000000', lift),
     },
     dark: {
-      bg: mixHex(draft.surfaces.bg.dark, '#6a7076', amount),
-      well: mixHex(draft.surfaces.well.dark, '#6a7076', amount),
-      gradient: chassisGradient(
-        mixHex(draft.brand['700'], '#6a7076', amount),
-        mixHex(draft.surfaces.bg.dark, '#6a7076', amount),
-        mixHex(draft.surfaces.well.dark, '#6a7076', amount),
-      ),
+      bg: darkMid,
+      well: draft.brand['900'],
+      hi: mixHex(darkMid, '#ffffff', lift),
+      mid: darkMid,
+      lo: mixHex(darkMid, '#000000', lift),
     },
   }
 }
@@ -71,10 +75,26 @@ export function buildThemeConfig(draft: ThemeDraft) {
         minHeight: '100%',
       },
       body: {
-        bg: 'app.bg',
-        backgroundImage: 'gradients.chassis',
+        bgColor: 'app.bg',
+        backgroundImage: chassisImage,
         color: 'fg',
         margin: '0',
+      },
+      '*, *::before, *::after': {
+        accentColor: 'app.focus',
+      },
+      '*:focus': {
+        outline: 'none',
+      },
+      '*:focus-visible': {
+        outlineColor: 'app.focus',
+        outlineOffset: '0',
+        outlineStyle: 'solid',
+        outlineWidth: '1px',
+      },
+      '::selection': {
+        background: 'app.focus',
+        color: { _light: 'app.surface', _dark: 'brand.950' },
       },
       'h1, h2, h3, h4': {
         fontFamily: 'heading',
@@ -94,7 +114,10 @@ export function buildThemeConfig(draft: ThemeDraft) {
           mono: { value: draft.fonts.mono },
         },
         radii: radii(),
-        shadows: shadows(),
+        shadows: {
+          xs: { value: edgeShadows(draft).xs.light },
+          sm: { value: edgeShadows(draft).sm.light },
+        },
         letterSpacings: {
           tight: { value: '-0.02em' },
           wide: { value: '0.14em' },
@@ -104,23 +127,14 @@ export function buildThemeConfig(draft: ThemeDraft) {
           none: { value: '1' },
           plate: { value: '1.05' },
         },
-        gradients: {
-          chassisLight: { value: chassisTone(draft, 0.58).light.gradient },
-          chassisDark: { value: chassisTone(draft, 0).dark.gradient },
-        },
       },
       semanticTokens: {
-        gradients: {
-          chassis: {
-            value: { _light: '{gradients.chassisLight}', _dark: '{gradients.chassisDark}' },
-          },
-        },
         colors: {
           app: {
             bg: {
               value: {
-                _light: chassisTone(draft, 0.58).light.bg,
-                _dark: chassisTone(draft, 0).dark.bg,
+                _light: chassisTone(draft).light.bg,
+                _dark: chassisTone(draft).dark.bg,
               },
             },
             surface: {
@@ -132,13 +146,45 @@ export function buildThemeConfig(draft: ThemeDraft) {
             border: {
               value: { _light: draft.surfaces.border.light, _dark: draft.surfaces.border.dark },
             },
+            highlight: {
+              value: {
+                _light: draft.surfaces.highlight.light,
+                _dark: draft.surfaces.highlight.dark,
+              },
+            },
+            recess: {
+              value: { _light: draft.surfaces.recess.light, _dark: draft.surfaces.recess.dark },
+            },
             well: {
               value: {
-                _light: chassisTone(draft, 0.58).light.well,
-                _dark: chassisTone(draft, 0).dark.well,
+                _light: chassisTone(draft).light.well,
+                _dark: chassisTone(draft).dark.well,
+              },
+            },
+            chassis: {
+              hi: {
+                value: { _light: chassisTone(draft).light.hi, _dark: chassisTone(draft).dark.hi },
+              },
+              mid: {
+                value: { _light: chassisTone(draft).light.mid, _dark: chassisTone(draft).dark.mid },
+              },
+              lo: {
+                value: { _light: chassisTone(draft).light.lo, _dark: chassisTone(draft).dark.lo },
               },
             },
             accent: { value: '{colors.accent}' },
+            focus: {
+              value: {
+                _light: draft.surfaces.recess.light,
+                _dark: draft.brand['200'],
+              },
+            },
+            spot: {
+              value: {
+                _light: draft.brand['100'],
+                _dark: mixHex(draft.brand['800'], '#ffffff', 0.08),
+              },
+            },
           },
           brand: {
             solid: {
@@ -155,18 +201,33 @@ export function buildThemeConfig(draft: ThemeDraft) {
               value: { _light: '{colors.brand.50}', _dark: '{colors.brand.900}' },
             },
             emphasized: { value: '{colors.brand.200}' },
-            focusRing: { value: '{colors.accent}' },
+            focusRing: { value: '{colors.app.focus}' },
+          },
+        },
+        shadows: {
+          xs: {
+            value: { _light: edgeShadows(draft).xs.light, _dark: edgeShadows(draft).xs.dark },
+          },
+          sm: {
+            value: { _light: edgeShadows(draft).sm.light, _dark: edgeShadows(draft).sm.dark },
           },
         },
       },
       recipes: {
         button: {
+          base: {
+            focusVisibleRing: 'none',
+          },
           variants: {
             variant: {
               solid: {
                 bg: { _light: 'brand.950', _dark: 'brand.50' },
                 color: { _light: 'brand.50', _dark: 'brand.950' },
                 borderColor: 'transparent',
+              },
+              outline: {
+                borderColor: 'app.border',
+                color: 'fg',
               },
             },
           },
@@ -177,6 +238,24 @@ export function buildThemeConfig(draft: ThemeDraft) {
               solid: {
                 bg: { _light: 'brand.950', _dark: 'brand.50' },
                 color: { _light: 'brand.50', _dark: 'brand.950' },
+              },
+            },
+          },
+        },
+        link: {
+          base: {
+            focusVisibleRing: 'none',
+          },
+        },
+      },
+      slotRecipes: {
+        menu: {
+          variants: {
+            variant: {
+              subtle: {
+                item: {
+                  _highlighted: { bg: 'app.spot', color: 'fg' },
+                },
               },
             },
           },
@@ -210,10 +289,26 @@ const config = defineConfig({
       minHeight: '100%',
     },
     body: {
-      bg: 'app.bg',
-      backgroundImage: 'gradients.chassis',
+      bgColor: 'app.bg',
+      backgroundImage: 'linear-gradient(180deg, var(--tony-colors-app-chassis-hi) 0%, var(--tony-colors-app-chassis-mid) 48%, var(--tony-colors-app-chassis-lo) 100%)',
       color: 'fg',
       margin: '0',
+    },
+    '*, *::before, *::after': {
+      accentColor: 'app.focus',
+    },
+    '*:focus': {
+      outline: 'none',
+    },
+    '*:focus-visible': {
+      outlineColor: 'app.focus',
+      outlineOffset: '0',
+      outlineStyle: 'solid',
+      outlineWidth: '1px',
+    },
+    '::selection': {
+      background: 'app.focus',
+      color: { _light: 'app.surface', _dark: 'brand.950' },
     },
     'h1, h2, h3, h4': {
       fontFamily: 'heading',
@@ -245,7 +340,8 @@ ${brand}
         l3: { value: ${quote(plateRadius)} },
       },
       shadows: {
-        sm: { value: ${quote(seam)} },
+        xs: { value: ${quote(edgeShadows(draft).xs.light)} },
+        sm: { value: ${quote(edgeShadows(draft).sm.light)} },
       },
       letterSpacings: {
         tight: { value: '-0.02em' },
@@ -256,21 +352,12 @@ ${brand}
         none: { value: '1' },
         plate: { value: '1.05' },
       },
-      gradients: {
-        chassisLight: { value: ${quote(chassisTone(draft, 0.58).light.gradient)} },
-        chassisDark: { value: ${quote(chassisTone(draft, 0).dark.gradient)} },
-      },
     },
     semanticTokens: {
-      gradients: {
-        chassis: {
-          value: { _light: '{gradients.chassisLight}', _dark: '{gradients.chassisDark}' },
-        },
-      },
       colors: {
         app: {
           bg: {
-            value: { _light: ${quote(chassisTone(draft, 0.58).light.bg)}, _dark: ${quote(chassisTone(draft, 0).dark.bg)} },
+            value: { _light: ${quote(chassisTone(draft).light.bg)}, _dark: ${quote(chassisTone(draft).dark.bg)} },
           },
           surface: {
             value: { _light: ${quote(draft.surfaces.surface.light)}, _dark: ${quote(draft.surfaces.surface.dark)} },
@@ -278,10 +365,27 @@ ${brand}
           border: {
             value: { _light: ${quote(draft.surfaces.border.light)}, _dark: ${quote(draft.surfaces.border.dark)} },
           },
+          highlight: {
+            value: { _light: ${quote(draft.surfaces.highlight.light)}, _dark: ${quote(draft.surfaces.highlight.dark)} },
+          },
+          recess: {
+            value: { _light: ${quote(draft.surfaces.recess.light)}, _dark: ${quote(draft.surfaces.recess.dark)} },
+          },
           well: {
-            value: { _light: ${quote(chassisTone(draft, 0.58).light.well)}, _dark: ${quote(chassisTone(draft, 0).dark.well)} },
+            value: { _light: ${quote(chassisTone(draft).light.well)}, _dark: ${quote(chassisTone(draft).dark.well)} },
+          },
+          chassis: {
+            hi: { value: { _light: ${quote(chassisTone(draft).light.hi)}, _dark: ${quote(chassisTone(draft).dark.hi)} } },
+            mid: { value: { _light: ${quote(chassisTone(draft).light.mid)}, _dark: ${quote(chassisTone(draft).dark.mid)} } },
+            lo: { value: { _light: ${quote(chassisTone(draft).light.lo)}, _dark: ${quote(chassisTone(draft).dark.lo)} } },
           },
           accent: { value: '{colors.accent}' },
+          focus: {
+            value: { _light: ${quote(draft.surfaces.recess.light)}, _dark: ${quote(draft.brand['200'])} },
+          },
+          spot: {
+            value: { _light: ${quote(draft.brand['100'])}, _dark: ${quote(mixHex(draft.brand['800'], '#ffffff', 0.08))} },
+          },
         },
         brand: {
           solid: {
@@ -298,17 +402,28 @@ ${brand}
             value: { _light: '{colors.brand.50}', _dark: '{colors.brand.900}' },
           },
           emphasized: { value: '{colors.brand.200}' },
-          focusRing: { value: '{colors.accent}' },
+          focusRing: { value: '{colors.app.focus}' },
+        },
+        shadows: {
+          xs: { value: { _light: ${quote(edgeShadows(draft).xs.light)}, _dark: ${quote(edgeShadows(draft).xs.dark)} } },
+          sm: { value: { _light: ${quote(edgeShadows(draft).sm.light)}, _dark: ${quote(edgeShadows(draft).sm.dark)} } },
         },
       },
       recipes: {
         button: {
+          base: {
+            focusVisibleRing: 'none',
+          },
           variants: {
             variant: {
               solid: {
                 bg: { _light: 'brand.950', _dark: 'brand.50' },
                 color: { _light: 'brand.50', _dark: 'brand.950' },
                 borderColor: 'transparent',
+              },
+              outline: {
+                borderColor: 'app.border',
+                color: 'fg',
               },
             },
           },
@@ -319,6 +434,24 @@ ${brand}
               solid: {
                 bg: { _light: 'brand.950', _dark: 'brand.50' },
                 color: { _light: 'brand.50', _dark: 'brand.950' },
+              },
+            },
+          },
+        },
+        link: {
+          base: {
+            focusVisibleRing: 'none',
+          },
+        },
+      },
+      slotRecipes: {
+        menu: {
+          variants: {
+            variant: {
+              subtle: {
+                item: {
+                  _highlighted: { bg: 'app.spot', color: 'fg' },
+                },
               },
             },
           },
