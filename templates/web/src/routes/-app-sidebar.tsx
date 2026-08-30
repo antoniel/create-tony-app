@@ -18,12 +18,14 @@ import {
   Moon,
   SidebarSimple,
   SquaresFour,
+  StackSimple,
   Sun,
+  Swatches,
 } from '@phosphor-icons/react/ssr'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { componentPages, componentTo } from '../lib/pages'
+import { componentPages, componentTo, type ComponentIndex } from '../lib/pages'
 import { chassisImage } from '../theme/build'
 import { navRowProps } from './-nav-mark'
 
@@ -36,14 +38,30 @@ const themeModes = [
   { id: 'system', label: 'system', icon: Desktop },
 ] as const
 
-const nav = [
+type NavItem = {
+  href: string
+  to: '/' | '/components' | '/components/$index'
+  params?: { index: ComponentIndex }
+  label: string
+  spec: string
+  icon: PhosphorIcon
+  exact?: boolean
+}
+
+const nav: { label: string; icon: PhosphorIcon; items: NavItem[] }[] = [
+  {
+    label: 'plate',
+    icon: StackSimple,
+    items: [{ href: '/', to: '/' as const, label: 'system', exact: true as const, spec: '01', icon: Swatches }],
+  },
   {
     label: 'components',
     icon: Cube,
     items: [
-      { href: '/components', label: 'all', exact: true as const, spec: '00', icon: SquaresFour },
+      { href: '/components', to: '/components' as const, label: 'all', exact: true as const, spec: '00', icon: SquaresFour },
       ...componentPages.map((page) => ({
         href: `/components/${page.index}`,
+        to: '/components/$index' as const,
         params: componentTo(page.index).params,
         label: page.label,
         spec: page.spec,
@@ -319,7 +337,7 @@ function GroupChildren({
           <ChakraLink asChild display="block" key={item.href} textDecoration="none" w="full">
             <Link
               params={'params' in item ? item.params : undefined}
-              to={'params' in item ? '/components/$index' : '/components'}
+              to={item.to}
               onClick={onSelect}
             >
               <Flex align="center" gap="2" h="8" pr="3" w="full" {...navRowProps(active)}>
@@ -456,7 +474,7 @@ function currentItem(pathname: string) {
   return items.find((item) => itemActive(pathname, item)) ?? items[0]
 }
 
-function itemActive(pathname: string, item: (typeof nav)[number]['items'][number]) {
+function itemActive(pathname: string, item: NavItem) {
   return 'exact' in item && item.exact ? pathname === item.href : pathname.startsWith(item.href)
 }
 
