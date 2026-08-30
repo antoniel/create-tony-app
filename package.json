@@ -16,7 +16,7 @@
     "dev": "node scripts/dev.js",
     "start": "tsc -p tsconfig.json --watch",
     "test": "true",
-    "release": "np --package-manager npm"
+    "release": "npm publish"
   },
   "files": [
     "dist",
