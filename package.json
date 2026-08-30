@@ -4,6 +4,9 @@
   "author": "Antoniel <antoniel2210@gmail.com>",
   "description": "Compose a Bun monorepo from a visual project tree",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "bin": {
     "create-tony-app": "./dist/index.js"
   },
@@ -13,7 +16,7 @@
     "dev": "node scripts/dev.js",
     "start": "tsc -p tsconfig.json --watch",
     "test": "true",
-    "release": "np"
+    "release": "np --package-manager npm"
   },
   "files": [
     "dist",
