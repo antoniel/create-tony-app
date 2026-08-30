@@ -1,8 +1,8 @@
 import { Box, Flex } from '@chakra-ui/react'
 import type { QueryClient } from '@tanstack/react-query'
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
-import { AppSidebar, useRailCollapsed } from '../components/app-sidebar'
-import { Provider } from '../components/ui/provider'
+import { AppSidebar, useRailCollapsed } from './-app-sidebar'
+import { Provider } from './-provider'
 import { chassisImage } from '../theme/build'
 
 export const Route = createRootRouteWithContext<{

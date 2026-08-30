@@ -1,6 +1,6 @@
 import { Box, Code, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import { brandSteps, defaultDraft } from '../theme/draft'
-import { DocsSection, PageFrame, PageIntro } from './docs-section'
+import { DocsSection, PageFrame, PageIntro } from '../components/docs-section'
 
 const brandScale = brandSteps.map((step) => [step, defaultDraft.brand[step]] as const)
 

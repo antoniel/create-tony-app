@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { DesignSystemPage } from '../components/design-system'
+import { DesignSystemPage } from './-design-system'
 import { healthService } from '../modules/health'
 
 export const Route = createFileRoute('/')({

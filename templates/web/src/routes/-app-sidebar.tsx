@@ -12,9 +12,11 @@ import {
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
 import {
   CaretRight,
+  Circle,
   Cube,
   Desktop,
   Faders,
+  File,
   GearSix,
   Moon,
   Plugs,
@@ -22,12 +24,13 @@ import {
   StackSimple,
   Sun,
   Swatches,
+  TextT,
 } from '@phosphor-icons/react/ssr'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useTheme } from 'next-themes'
 import { useEffect, useState, type ReactNode } from 'react'
 import { chassisImage } from '../theme/build'
-import { navRowProps } from './nav-mark'
+import { navRowProps } from './-nav-mark'
 
 const frameEase = 'width 0.32s cubic-bezier(0.16, 1, 0.3, 1)'
 const fadeEase = 'opacity 0.18s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1)'
@@ -48,15 +51,20 @@ const nav = [
     label: 'port',
     icon: Plugs,
     items: [
-      { to: '/components', label: 'bits', spec: '02', icon: Cube },
-      { to: '/theme', label: 'tune', spec: '03', icon: Faders },
+      { to: '/components/buttons', label: 'buttons', spec: '02', icon: Cube },
+      { to: '/components/marks', label: 'marks', spec: '03', icon: Circle },
+      { to: '/components/url', label: 'url', spec: '04', icon: Plugs },
+      { to: '/theme/seed', label: 'seed', spec: '05', icon: Faders },
+      { to: '/theme/surfaces', label: 'surf', spec: '06', icon: Swatches },
+      { to: '/theme/fonts', label: 'type', spec: '07', icon: TextT },
+      { to: '/theme/file', label: 'file', spec: '08', icon: File },
     ],
   },
 ] as const
 
 export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
-  const current = currentItem(pathname)
+  const spec = currentItem(pathname)?.spec ?? ''
   const [accordion, setAccordion] = useState<Record<string, boolean>>(savedAccordion)
   const [flyout, setFlyout] = useState<Record<string, boolean>>(savedFlyout)
 
@@ -119,7 +127,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                 </Text>
                 <Box bg="app.border" h="3" w="px" />
                 <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide">
-                  {current?.spec ?? ''}
+                  {spec}
                 </Text>
               </Flex>
             </Link>
