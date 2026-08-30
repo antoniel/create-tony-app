@@ -1,6 +1,9 @@
 import { Box, Code, Flex, Grid, Stack, Text } from '@chakra-ui/react'
-import { DocsSection, PageFrame, PageIntro } from './docs-section'
+import { CaretRight, Cube, Faders, Plugs, StackSimple, Swatches } from '@phosphor-icons/react/ssr'
+import { useState } from 'react'
 import { brandSteps, defaultDraft } from '../theme/draft'
+import { DocsSection, PageFrame, PageIntro } from './docs-section'
+import { navMarks, navRowProps, useNavMark, type NavMark } from './nav-mark'
 
 const brandScale = brandSteps.map((step) => [step, defaultDraft.brand[step]] as const)
 
@@ -142,6 +145,8 @@ export function DesignSystemPage({ status }: { status?: string }) {
           </Stack>
         </DocsSection>
 
+        <NavMarkSection />
+
         <DocsSection copy="4, 8, 24. that is the set." kicker="shape" title="edge">
           <Grid gap="6" templateColumns="repeat(auto-fill, minmax(14rem, 1fr))">
             {edges.map((edge) => (
@@ -164,5 +169,146 @@ export function DesignSystemPage({ status }: { status?: string }) {
         </DocsSection>
       </Stack>
     </PageFrame>
+  )
+}
+
+const previewTree = [
+  {
+    label: 'plate',
+    icon: StackSimple,
+    items: [{ label: 'system', spec: '01', icon: Swatches }],
+  },
+  {
+    label: 'port',
+    icon: Plugs,
+    items: [
+      { label: 'bits', spec: '02', icon: Cube },
+      { label: 'tune', spec: '03', icon: Faders },
+    ],
+  },
+] as const
+
+function NavMarkSection() {
+  const [mark, setMark] = useNavMark()
+  const [picked, setPicked] = useState('system')
+
+  return (
+    <DocsSection
+      copy="three marks. hover and click a child. the live rail follows the one you pick."
+      kicker="nav"
+      title="submenu"
+    >
+      <Grid gap="6" templateColumns="repeat(auto-fill, minmax(16rem, 1fr))">
+        {navMarks.map((option) => {
+          const active = mark === option.id
+          return (
+            <Stack
+              bg={active ? 'app.spot' : 'transparent'}
+              borderColor={active ? 'app.focus' : 'app.border'}
+              borderWidth="1px"
+              gap="4"
+              key={option.id}
+              p="3"
+              shadow="xs"
+            >
+              <Stack
+                as="button"
+                cursor="pointer"
+                gap="1"
+                textAlign="left"
+                type="button"
+                onClick={() => setMark(option.id)}
+              >
+                <Text fontFamily="mono" fontSize="2xs" letterSpacing="wide">
+                  {option.title}
+                  {active ? '  ·  on' : ''}
+                </Text>
+                <Text color="fg.muted" fontSize="sm">
+                  {option.copy}
+                </Text>
+              </Stack>
+              <MarkPreview
+                mark={option.id}
+                picked={picked}
+                onPick={(label) => {
+                  setPicked(label)
+                  setMark(option.id)
+                }}
+              />
+            </Stack>
+          )
+        })}
+      </Grid>
+    </DocsSection>
+  )
+}
+
+function MarkPreview({
+  mark,
+  picked,
+  onPick,
+}: {
+  mark: NavMark
+  picked: string
+  onPick: (label: string) => void
+}) {
+  return (
+    <Stack bg="app.bg" borderColor="app.border" borderWidth="1px" gap="0" py="2">
+      {previewTree.map((group) => {
+        const inherited = group.items.some((item) => item.label === picked)
+        return (
+          <Stack gap="0" key={group.label}>
+            <Flex align="center" gap="2" h="8" px="3" {...navRowProps(mark, false, inherited)}>
+              <Flex h="8" placeContent="center" placeItems="center" w="8">
+                <group.icon size={16} weight="light" />
+              </Flex>
+              <Text flex="1" fontSize="sm">
+                {group.label}
+              </Text>
+              <CaretRight size={12} weight="light" />
+            </Flex>
+            <Stack
+              alignSelf="stretch"
+              borderColor="app.border"
+              borderLeftWidth="1px"
+              gap="0"
+              minW="0"
+              ml="6"
+              overflow="hidden"
+              w="auto"
+            >
+              {group.items.map((item) => {
+                const selected = picked === item.label
+                return (
+                  <Flex
+                    align="center"
+                    as="button"
+                    cursor="pointer"
+                    gap="2"
+                    h="8"
+                    key={item.label}
+                    pr="3"
+                    type="button"
+                    w="full"
+                    {...navRowProps(mark, selected)}
+                    onClick={() => onPick(item.label)}
+                  >
+                    <Flex h="8" placeContent="center" placeItems="center" w="8">
+                      <item.icon size={16} weight="light" />
+                    </Flex>
+                    <Text flex="1" fontSize="sm" textAlign="left">
+                      {item.label}
+                    </Text>
+                    <Text fontFamily="mono" fontSize="2xs" letterSpacing="wide" w="8">
+                      {item.spec}
+                    </Text>
+                  </Flex>
+                )
+              })}
+            </Stack>
+          </Stack>
+        )
+      })}
+    </Stack>
   )
 }

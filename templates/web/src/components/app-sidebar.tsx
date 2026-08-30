@@ -1,4 +1,4 @@
-import { Box, Link as ChakraLink, Flex, Menu, Stack, Text, Tooltip } from '@chakra-ui/react'
+import { Box, Link as ChakraLink, Flex, Menu, Popover, Portal, Stack, Text, Tooltip } from '@chakra-ui/react'
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
 import {
   CaretRight,
@@ -17,13 +17,10 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import { useTheme } from 'next-themes'
 import { useEffect, useState, type ReactNode } from 'react'
 import { chassisImage } from '../theme/build'
+import { navMarks, navRowProps, parseNavMarkMenuValue, setNavMark, useNavMark } from './nav-mark'
 
 const frameEase = 'width 0.32s cubic-bezier(0.16, 1, 0.3, 1)'
 const fadeEase = 'opacity 0.18s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1)'
-const railHit = {
-  _hover: { bg: 'app.spot', color: 'fg' },
-  _focusVisible: { bg: 'app.spot', color: 'fg' },
-} as const
 
 const themeModes = [
   { id: 'light', label: 'light', icon: Sun },
@@ -56,6 +53,19 @@ function currentItem(pathname: string) {
   return items.find((item) => itemActive(pathname, item)) ?? items[0]
 }
 
+const closedRail = () => Object.fromEntries(nav.map((group) => [group.label, false]))
+let savedOpen = closedRail()
+let savedCollapsed = false
+
+export function useRailCollapsed() {
+  const [collapsed, setCollapsed] = useState(savedCollapsed)
+  const setRailCollapsed = (next: boolean) => {
+    savedCollapsed = next
+    setCollapsed(next)
+  }
+  return [collapsed, setRailCollapsed] as const
+}
+
 function IconMark({ icon: Glyph }: { icon: PhosphorIcon }) {
   return <Glyph size={16} weight="light" />
 }
@@ -77,23 +87,85 @@ function RailTip({
       positioning={{ placement: 'right', gutter: 8 }}
     >
       <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
-      <Tooltip.Positioner>
-        <Tooltip.Content
-          bg="app.surface"
-          borderColor="app.border"
-          borderWidth="1px"
-          color="fg"
-          fontFamily="mono"
-          fontSize="2xs"
-          letterSpacing="wide"
-          px="2"
-          py="1"
-          shadow="xs"
-        >
-          {label}
-        </Tooltip.Content>
-      </Tooltip.Positioner>
+      <Portal>
+        <Tooltip.Positioner>
+          <Tooltip.Content
+            bg="app.surface"
+            borderColor="app.border"
+            borderWidth="1px"
+            color="fg"
+            fontFamily="mono"
+            fontSize="2xs"
+            letterSpacing="wide"
+            px="2"
+            py="1"
+            shadow="xs"
+          >
+            {label}
+          </Tooltip.Content>
+        </Tooltip.Positioner>
+      </Portal>
     </Tooltip.Root>
+  )
+}
+
+function GroupChildren({
+  group,
+  inset,
+  mark,
+  pathname,
+}: {
+  group: (typeof nav)[number]
+  inset: boolean
+  mark: ReturnType<typeof useNavMark>[0]
+  pathname: string
+}) {
+  return (
+    <Stack
+      alignSelf="stretch"
+      borderColor="app.border"
+      borderLeftWidth={inset ? '1px' : '0'}
+      gap="0"
+      minW="0"
+      ml={inset ? '6' : '0'}
+      overflow="hidden"
+      w="auto"
+    >
+      {group.items.map((item) => {
+        const active = itemActive(pathname, item)
+        return (
+          <ChakraLink asChild display="block" key={item.to} textDecoration="none" w="full">
+            <Link to={item.to}>
+              <Flex
+                align="center"
+                gap="2"
+                h="8"
+                pr="3"
+                w="full"
+                {...navRowProps(mark, active)}
+              >
+                <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
+                  <IconMark icon={item.icon} />
+                </Flex>
+                <Text flex="1" fontSize="sm" letterSpacing="tight">
+                  {item.label}
+                </Text>
+                <Text
+                  flexShrink="0"
+                  fontFamily="mono"
+                  fontSize="2xs"
+                  letterSpacing="wide"
+                  textAlign="center"
+                  w="8"
+                >
+                  {item.spec}
+                </Text>
+              </Flex>
+            </Link>
+          </ChakraLink>
+        )
+      })}
+    </Stack>
   )
 }
 
@@ -130,23 +202,13 @@ function IconButton({
 export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const current = currentItem(pathname)
-  const [open, setOpen] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
-      nav.map((group) => [group.label, group.items.some((item) => itemActive(pathname, item))]),
-    ),
-  )
+  const [mark] = useNavMark()
+  const [open, setOpen] = useState<Record<string, boolean>>(savedOpen)
 
-  useEffect(() => {
-    setOpen((currentOpen) => {
-      const next = { ...currentOpen }
-      for (const group of nav) {
-        if (group.items.some((item) => itemActive(pathname, item))) {
-          next[group.label] = true
-        }
-      }
-      return next
-    })
-  }, [pathname])
+  const toggleGroup = (label: string) => {
+    savedOpen = { ...savedOpen, [label]: !savedOpen[label] }
+    setOpen(savedOpen)
+  }
 
   return (
     <Flex
@@ -162,7 +224,14 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
       transition={frameEase}
       w={collapsed ? '14' : '56'}
     >
-      <Flex direction="column" h="full" minW="56" overflow="auto" w="56">
+      <Flex
+        direction="column"
+        h="full"
+        minW={collapsed ? '14' : '56'}
+        overflow="auto"
+        transition={frameEase}
+        w={collapsed ? '14' : '56'}
+      >
         <Flex align="center" h="10" justify="space-between" px="3" w="full">
           <ChakraLink asChild>
             <Link to="/">
@@ -180,7 +249,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                 </Text>
                 <Box bg="app.border" h="3" w="px" />
                 <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide">
-                  {current.spec}
+                  {current?.spec ?? ''}
                 </Text>
               </Flex>
             </Link>
@@ -193,114 +262,127 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
             const expanded = open[group.label] ?? false
             const groupActive = group.items.some((item) => itemActive(pathname, item))
 
-            return (
-              <Stack gap="0" key={group.label} w="full">
-                <RailTip enabled={collapsed} label={group.label}>
-                <Flex
-                  as="button"
-                  align="center"
-                  aria-expanded={expanded}
-                  aria-label={collapsed ? group.label : undefined}
-                  bg={groupActive && !expanded ? 'app.spot' : 'transparent'}
-                  color={groupActive ? 'fg' : 'fg.muted'}
-                  cursor="pointer"
-                  gap="2"
-                  h="8"
-                  px="3"
-                  type="button"
-                  w="full"
-                  {...railHit}
-                  onClick={() =>
-                    setOpen((currentOpen) => ({ ...currentOpen, [group.label]: !expanded }))
-                  }
-                >
+            const groupButton = (
+              <Flex
+                as="button"
+                align="center"
+                aria-expanded={expanded}
+                aria-label={collapsed ? group.label : undefined}
+                cursor="pointer"
+                gap="2"
+                h="8"
+                px="3"
+                w="full"
+                {...navRowProps(mark, false, groupActive)}
+                onClick={() => toggleGroup(group.label)}
+              >
+                {collapsed ? (
+                  <Popover.Anchor asChild>
+                    <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
+                      <IconMark icon={group.icon} />
+                    </Flex>
+                  </Popover.Anchor>
+                ) : (
                   <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
                     <IconMark icon={group.icon} />
                   </Flex>
-                  <Text
-                    flex="1"
-                    fontSize="sm"
-                    letterSpacing="tight"
-                    opacity={collapsed ? 0 : 1}
-                    textAlign="left"
-                    transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
-                    transition={fadeEase}
+                )}
+                <Text
+                  flex="1"
+                  fontSize="sm"
+                  letterSpacing="tight"
+                  opacity={collapsed ? 0 : 1}
+                  textAlign="left"
+                  transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
+                  transition={fadeEase}
+                >
+                  {group.label}
+                </Text>
+                <Flex
+                  color="fg.muted"
+                  h="8"
+                  opacity={collapsed ? 0 : 1}
+                  placeContent="center"
+                  placeItems="center"
+                  transition={fadeEase}
+                  w="8"
+                >
+                  <Box
+                    transform={expanded ? 'rotate(90deg)' : 'none'}
+                    transition="transform 0.15s ease"
                   >
-                    {group.label}
-                  </Text>
-                  <Flex
-                    color="fg.muted"
-                    h="8"
-                    opacity={collapsed ? 0 : 1}
-                    placeContent="center"
-                    placeItems="center"
-                    transition={fadeEase}
-                    w="8"
-                  >
-                    <Box
-                      transform={expanded ? 'rotate(90deg)' : 'none'}
-                      transition="transform 0.15s ease"
-                    >
-                      <CaretRight size={12} weight="light" />
-                    </Box>
-                  </Flex>
+                    <CaretRight size={12} weight="light" />
+                  </Box>
                 </Flex>
-                </RailTip>
+              </Flex>
+            )
 
-                {expanded
-                  ? group.items.map((item) => {
-                      const active = itemActive(pathname, item)
-                      return (
-                        <ChakraLink asChild display="block" key={item.to} w="full">
-                          <Link to={item.to}>
-                            <Flex
-                              align="center"
-                              bg={active ? 'app.spot' : 'transparent'}
-                              color={active ? 'fg' : 'fg.muted'}
-                              gap="2"
-                              h={collapsed ? '0' : '8'}
-                              opacity={collapsed ? 0 : 1}
-                              overflow="hidden"
-                              pl="6"
-                              pr="3"
-                              transition={`${fadeEase}, height 0.32s cubic-bezier(0.16, 1, 0.3, 1)`}
-                              w="full"
-                              {...railHit}
-                            >
-                              <Flex
-                                flexShrink="0"
-                                h="8"
-                                placeContent="center"
-                                placeItems="center"
-                                w="8"
-                              >
-                                <IconMark icon={item.icon} />
-                              </Flex>
-                              <Text flex="1" fontSize="sm" letterSpacing="tight">
-                                {item.label}
-                              </Text>
-                              <Text
-                                flexShrink="0"
-                                fontFamily="mono"
-                                fontSize="2xs"
-                                letterSpacing="wide"
-                                textAlign="center"
-                                w="8"
-                              >
-                                {item.spec}
-                              </Text>
-                            </Flex>
-                          </Link>
-                        </ChakraLink>
-                      )
-                    })
-                  : null}
+            return (
+              <Stack gap="0" key={group.label} w="full">
+                {collapsed ? (
+                  <Popover.Root
+                    autoFocus={false}
+                    closeOnInteractOutside={false}
+                    open={expanded}
+                    positioning={{
+                      gutter: 12,
+                      placement: 'right-start',
+                      getAnchorRect: (el) => {
+                        if (!el) {
+                          return null
+                        }
+                        const rect = el.getBoundingClientRect()
+                        return DOMRect.fromRect({
+                          height: 0,
+                          width: 0,
+                          x: rect.right,
+                          y: rect.top,
+                        })
+                      },
+                    }}
+                  >
+                    <RailTip enabled={!expanded} label={group.label}>
+                      <Popover.Trigger asChild>{groupButton}</Popover.Trigger>
+                    </RailTip>
+                    <Portal>
+                      <Popover.Positioner>
+                        <Popover.Content
+                          bg="app.surface"
+                          borderColor="app.highlight"
+                          borderWidth="1px"
+                          minW="44"
+                          p="1"
+                          shadow="sm"
+                        >
+                          <Text
+                            color="fg.muted"
+                            fontFamily="mono"
+                            fontSize="2xs"
+                            letterSpacing="wide"
+                            px="3"
+                            py="1.5"
+                          >
+                            {group.label}
+                          </Text>
+                          <GroupChildren group={group} inset={false} mark={mark} pathname={pathname} />
+                        </Popover.Content>
+                      </Popover.Positioner>
+                    </Portal>
+                  </Popover.Root>
+                ) : (
+                  <>
+                    {groupButton}
+                    {expanded ? (
+                      <GroupChildren group={group} inset mark={mark} pathname={pathname} />
+                    ) : null}
+                  </>
+                )}
               </Stack>
             )
           })}
         </Stack>
 
-        <SetupMenu collapsed={collapsed} />
+        <SetupMenu collapsed={collapsed} mark={mark} />
       </Flex>
 
       <Flex align="center" h="10" position="absolute" right="3" top="2">
@@ -314,7 +396,13 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
   )
 }
 
-function SetupMenu({ collapsed }: { collapsed: boolean }) {
+function SetupMenu({
+  collapsed,
+  mark,
+}: {
+  collapsed: boolean
+  mark: ReturnType<typeof useNavMark>[0]
+}) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -326,7 +414,14 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
 
   return (
     <Menu.Root
-      onSelect={(details) => setTheme(details.value)}
+      onSelect={(details) => {
+        const mark = parseNavMarkMenuValue(details.value)
+        if (mark) {
+          setNavMark(mark)
+          return
+        }
+        setTheme(details.value)
+      }}
       positioning={{ placement: collapsed ? 'right-end' : 'top-start' }}
     >
       <RailTip enabled={collapsed} label="setup">
@@ -342,7 +437,7 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
           px="3"
           type="button"
           w="full"
-          {...railHit}
+          {...navRowProps(mark, false)}
         >
           <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
             <IconMark icon={GearSix} />
@@ -395,6 +490,30 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
               >
                 <IconMark icon={mode.icon} />
                 <Text fontSize="sm">{mode.label}</Text>
+              </Menu.Item>
+            )
+          })}
+          <Text
+            color="fg.muted"
+            fontFamily="mono"
+            fontSize="2xs"
+            letterSpacing="wide"
+            px="2"
+            py="1.5"
+          >
+            mark
+          </Text>
+          {navMarks.map((option) => {
+            const active = mark === option.id
+            return (
+              <Menu.Item
+                bg={active ? 'app.spot' : 'transparent'}
+                color={active ? 'fg' : 'fg.muted'}
+                gap="2"
+                key={option.id}
+                value={`mark:${option.id}`}
+              >
+                <Text fontSize="sm">{option.title}</Text>
               </Menu.Item>
             )
           })}
