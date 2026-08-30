@@ -1,4 +1,14 @@
-import { Box, Link as ChakraLink, Flex, Menu, Popover, Portal, Stack, Text, Tooltip } from '@chakra-ui/react'
+import {
+  Box,
+  Link as ChakraLink,
+  Flex,
+  Menu,
+  Popover,
+  Portal,
+  Stack,
+  Text,
+  Tooltip,
+} from '@chakra-ui/react'
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
 import {
   CaretRight,
@@ -43,162 +53,6 @@ const nav = [
     ],
   },
 ] as const
-
-function itemActive(pathname: string, item: (typeof nav)[number]['items'][number]) {
-  return 'exact' in item && item.exact ? pathname === item.to : pathname.startsWith(item.to)
-}
-
-function currentItem(pathname: string) {
-  const items = nav.flatMap((group) => group.items)
-  return items.find((item) => itemActive(pathname, item)) ?? items[0]
-}
-
-const closedRail = () => Object.fromEntries(nav.map((group) => [group.label, false]))
-let savedAccordion = closedRail()
-let savedFlyout = closedRail()
-let savedCollapsed = false
-
-export function useRailCollapsed() {
-  const [collapsed, setCollapsed] = useState(savedCollapsed)
-  const setRailCollapsed = (next: boolean) => {
-    savedCollapsed = next
-    setCollapsed(next)
-  }
-  return [collapsed, setRailCollapsed] as const
-}
-
-function IconMark({ icon: Glyph }: { icon: PhosphorIcon }) {
-  return <Glyph size={16} weight="light" />
-}
-
-function RailTip({
-  label,
-  enabled,
-  children,
-}: {
-  label: string
-  enabled: boolean
-  children: ReactNode
-}) {
-  return (
-    <Tooltip.Root
-      closeDelay={80}
-      disabled={!enabled}
-      openDelay={200}
-      positioning={{ placement: 'right', gutter: 8 }}
-    >
-      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
-      <Portal>
-        <Tooltip.Positioner>
-          <Tooltip.Content
-            bg="app.surface"
-            borderColor="app.border"
-            borderWidth="1px"
-            color="fg"
-            fontFamily="mono"
-            fontSize="2xs"
-            letterSpacing="wide"
-            px="2"
-            py="1"
-            shadow="xs"
-          >
-            {label}
-          </Tooltip.Content>
-        </Tooltip.Positioner>
-      </Portal>
-    </Tooltip.Root>
-  )
-}
-
-function GroupChildren({
-  group,
-  inset,
-  pathname,
-  onSelect,
-}: {
-  group: (typeof nav)[number]
-  inset: boolean
-  pathname: string
-  onSelect?: () => void
-}) {
-  return (
-    <Stack
-      alignSelf="stretch"
-      borderColor="app.border"
-      borderLeftWidth={inset ? '1px' : '0'}
-      gap="0"
-      minW="0"
-      ml={inset ? '6' : '0'}
-      overflow="hidden"
-      w="auto"
-    >
-      {group.items.map((item) => {
-        const active = itemActive(pathname, item)
-        return (
-          <ChakraLink asChild display="block" key={item.to} textDecoration="none" w="full">
-            <Link to={item.to} onClick={onSelect}>
-              <Flex
-                align="center"
-                gap="2"
-                h="8"
-                pr="3"
-                w="full"
-                {...navRowProps(active)}
-              >
-                <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
-                  <IconMark icon={item.icon} />
-                </Flex>
-                <Text flex="1" fontSize="sm" letterSpacing="tight">
-                  {item.label}
-                </Text>
-                <Text
-                  flexShrink="0"
-                  fontFamily="mono"
-                  fontSize="2xs"
-                  letterSpacing="wide"
-                  textAlign="center"
-                  w="8"
-                >
-                  {item.spec}
-                </Text>
-              </Flex>
-            </Link>
-          </ChakraLink>
-        )
-      })}
-    </Stack>
-  )
-}
-
-function IconButton({
-  label,
-  onClick,
-  children,
-}: {
-  label: string
-  onClick?: () => void
-  children: ReactNode
-}) {
-  return (
-    <Box
-      as="button"
-      aria-label={label}
-      color="fg.muted"
-      cursor="pointer"
-      display="flex"
-      flexShrink="0"
-      h="8"
-      placeContent="center"
-      placeItems="center"
-      type="button"
-      w="8"
-      _hover={{ color: 'fg' }}
-      onClick={onClick}
-    >
-      {children}
-    </Box>
-  )
-}
 
 export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
@@ -395,9 +249,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                 ) : (
                   <>
                     {groupButton}
-                    {expanded ? (
-                      <GroupChildren group={group} inset pathname={pathname} />
-                    ) : null}
+                    {expanded ? <GroupChildren group={group} inset pathname={pathname} /> : null}
                   </>
                 )}
               </Stack>
@@ -419,6 +271,68 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
   )
 }
 
+export function useRailCollapsed() {
+  const [collapsed, setCollapsed] = useState(savedCollapsed)
+  const setRailCollapsed = (next: boolean) => {
+    savedCollapsed = next
+    setCollapsed(next)
+  }
+  return [collapsed, setRailCollapsed] as const
+}
+
+function GroupChildren({
+  group,
+  inset,
+  pathname,
+  onSelect,
+}: {
+  group: (typeof nav)[number]
+  inset: boolean
+  pathname: string
+  onSelect?: () => void
+}) {
+  return (
+    <Stack
+      alignSelf="stretch"
+      borderColor="app.border"
+      borderLeftWidth={inset ? '1px' : '0'}
+      gap="0"
+      minW="0"
+      ml={inset ? '6' : '0'}
+      overflow="hidden"
+      w="auto"
+    >
+      {group.items.map((item) => {
+        const active = itemActive(pathname, item)
+        return (
+          <ChakraLink asChild display="block" key={item.to} textDecoration="none" w="full">
+            <Link to={item.to} onClick={onSelect}>
+              <Flex align="center" gap="2" h="8" pr="3" w="full" {...navRowProps(active)}>
+                <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
+                  <IconMark icon={item.icon} />
+                </Flex>
+                <Text flex="1" fontSize="sm" letterSpacing="tight">
+                  {item.label}
+                </Text>
+                <Text
+                  flexShrink="0"
+                  fontFamily="mono"
+                  fontSize="2xs"
+                  letterSpacing="wide"
+                  textAlign="center"
+                  w="8"
+                >
+                  {item.spec}
+                </Text>
+              </Flex>
+            </Link>
+          </ChakraLink>
+        )
+      })}
+    </Stack>
+  )
+}
+
 function SetupMenu({ collapsed }: { collapsed: boolean }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
@@ -435,46 +349,44 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
       positioning={{ placement: collapsed ? 'right-end' : 'top-start' }}
     >
       <RailTip enabled={collapsed} label="setup">
-      <Menu.Trigger asChild>
-        <Flex
-          as="button"
-          align="center"
-          aria-label={collapsed ? 'setup' : undefined}
-          color="fg.muted"
-          cursor="pointer"
-          gap="2"
-          h="10"
-          px="3"
-          type="button"
-          w="full"
-          {...navRowProps(false)}
-        >
-          <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
-            <IconMark icon={GearSix} />
-          </Flex>
-          <Text
-            flex="1"
-            fontSize="sm"
-            letterSpacing="tight"
-            opacity={collapsed ? 0 : 1}
-            textAlign="left"
-            transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
-            transition={fadeEase}
-          >
-            setup
-          </Text>
+        <Menu.Trigger asChild>
           <Flex
-            h="8"
-            opacity={collapsed ? 0 : 1}
-            placeContent="center"
-            placeItems="center"
-            transition={fadeEase}
-            w="8"
+            as="button"
+            align="center"
+            aria-label={collapsed ? 'setup' : undefined}
+            cursor="pointer"
+            gap="2"
+            h="10"
+            px="3"
+            w="full"
+            {...navRowProps(false)}
           >
-            <IconMark icon={mounted ? current.icon : Desktop} />
+            <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
+              <IconMark icon={GearSix} />
+            </Flex>
+            <Text
+              flex="1"
+              fontSize="sm"
+              letterSpacing="tight"
+              opacity={collapsed ? 0 : 1}
+              textAlign="left"
+              transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
+              transition={fadeEase}
+            >
+              setup
+            </Text>
+            <Flex
+              h="8"
+              opacity={collapsed ? 0 : 1}
+              placeContent="center"
+              placeItems="center"
+              transition={fadeEase}
+              w="8"
+            >
+              <IconMark icon={mounted ? current.icon : Desktop} />
+            </Flex>
           </Flex>
-        </Flex>
-      </Menu.Trigger>
+        </Menu.Trigger>
       </RailTip>
       <Menu.Positioner>
         <Menu.Content bg="app.surface" borderColor="app.border" minW="40" p="1" shadow="sm">
@@ -508,3 +420,92 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
     </Menu.Root>
   )
 }
+
+function currentItem(pathname: string) {
+  const items = nav.flatMap((group) => group.items)
+  return items.find((item) => itemActive(pathname, item)) ?? items[0]
+}
+
+function itemActive(pathname: string, item: (typeof nav)[number]['items'][number]) {
+  return 'exact' in item && item.exact ? pathname === item.to : pathname.startsWith(item.to)
+}
+
+function closedRail() {
+  return Object.fromEntries(nav.map((group) => [group.label, false]))
+}
+
+function IconMark({ icon: Glyph }: { icon: PhosphorIcon }) {
+  return <Glyph size={16} weight="light" />
+}
+
+function RailTip({
+  label,
+  enabled,
+  children,
+}: {
+  label: string
+  enabled: boolean
+  children: ReactNode
+}) {
+  return (
+    <Tooltip.Root
+      closeDelay={80}
+      disabled={!enabled}
+      openDelay={200}
+      positioning={{ placement: 'right', gutter: 8 }}
+    >
+      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
+      <Portal>
+        <Tooltip.Positioner>
+          <Tooltip.Content
+            bg="app.surface"
+            borderColor="app.border"
+            borderWidth="1px"
+            color="fg"
+            fontFamily="mono"
+            fontSize="2xs"
+            letterSpacing="wide"
+            px="2"
+            py="1"
+            shadow="xs"
+          >
+            {label}
+          </Tooltip.Content>
+        </Tooltip.Positioner>
+      </Portal>
+    </Tooltip.Root>
+  )
+}
+
+function IconButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string
+  onClick?: () => void
+  children: ReactNode
+}) {
+  return (
+    <Box
+      as="button"
+      aria-label={label}
+      color="fg.muted"
+      cursor="pointer"
+      display="flex"
+      flexShrink="0"
+      h="8"
+      placeContent="center"
+      placeItems="center"
+      w="8"
+      _hover={{ color: 'fg' }}
+      onClick={onClick}
+    >
+      {children}
+    </Box>
+  )
+}
+
+let savedAccordion = closedRail()
+let savedFlyout = closedRail()
+let savedCollapsed = false

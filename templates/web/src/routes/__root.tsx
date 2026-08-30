@@ -1,7 +1,9 @@
+import { Box, Flex } from '@chakra-ui/react'
 import type { QueryClient } from '@tanstack/react-query'
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
-import { AppShell } from '../components/app-shell'
+import { AppSidebar, useRailCollapsed } from '../components/app-sidebar'
 import { Provider } from '../components/ui/provider'
+import { chassisImage } from '../theme/build'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -26,10 +28,14 @@ export const Route = createRootRouteWithContext<{
 })
 
 function RootComponent() {
+  const [collapsed, setCollapsed] = useRailCollapsed()
   return (
-    <AppShell>
+    <Flex bgColor="app.bg" bgImage={chassisImage} h="100dvh" overflow="hidden" py="2" pr="2">
+      <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <Box as="main" bg="app.surface" borderRadius="2xl" flex="1" overflow="auto" shadow="sm">
       <Outlet />
-    </AppShell>
+      </Box>
+    </Flex>
   )
 }
 
