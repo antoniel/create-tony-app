@@ -1,12 +1,11 @@
 import { defineConfig } from 'drizzle-kit'
-import { dataDir } from './src/data-dir'
+import { databasePath } from './src/database-path'
 
 export default defineConfig({
-  dialect: 'postgresql',
-  driver: 'pglite',
+  dialect: 'sqlite',
   schema: './src/schema.ts',
   out: './drizzle',
   dbCredentials: {
-    url: dataDir,
+    url: databasePath,
   },
 })

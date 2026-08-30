@@ -72,7 +72,7 @@ function buildTree(projectName: string): GroupNode {
             feature: 'database',
             label: 'database/',
             path: 'packages/database',
-            description: 'Drizzle · PGlite',
+            description: 'Drizzle · SQLite',
           },
         ],
       },

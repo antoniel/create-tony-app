@@ -31,7 +31,7 @@ export async function create(projectName?: string) {
     spinner.text = 'Formatting the generated project...';
     await execa('bun', ['run', 'format'], { cwd: projectPath });
     if (selection.features.includes('database')) {
-      spinner.text = 'Starting PGlite...';
+      spinner.text = 'Preparing SQLite...';
       await execa('bun', ['run', 'db:ensure'], { cwd: projectPath });
     }
     spinner.succeed(`Created ${chalk.bold.green(selection.projectName)}`);
@@ -214,11 +214,11 @@ async function appendDatabaseReadme(projectPath: string) {
     `
 ## Database
 
-The workspace uses PGlite, an in-process Postgres. It starts on first create and again whenever the API imports \`@app/database\`. Point \`DATABASE_URL\` in the root \`.env\` at \`packages/database/data\`. Change that one value when you move off PGlite.
+The workspace uses SQLite through Bun's built-in driver. Create prepares the database file and starter \`users\` table, and the same file opens whenever the API imports \`@app/database\`. Point \`DATABASE_URL\` in the root \`.env\` at \`packages/database/data.db\`.
 
 Run Drizzle from the workspace root:
 
-- \`bun run db:ensure\` — create the PGlite data directory and starter tables
+- \`bun run db:ensure\` — create the SQLite file and starter tables
 - \`bun run db:generate\` — generate migrations from the schema
 - \`bun run db:migrate\` — apply generated migrations
 - \`bun run db:push\` — push schema changes directly
@@ -262,6 +262,7 @@ function webPackageJson(withApi: boolean) {
       '@tanstack/react-router-ssr-query': '^1.167.2',
       '@tanstack/react-start': '^1.168.49',
       nitro: '3.0.260610-beta',
+      mesurer: '^0.1.0',
       'next-themes': '^0.4.6',
       nuqs: '^2.10.1',
       react: '^19.2.0',
@@ -321,7 +322,6 @@ function databasePackageJson() {
       'db:studio': 'bun --env-file=../../.env x drizzle-kit studio',
     },
     dependencies: {
-      '@electric-sql/pglite': '^0.5.8',
       'drizzle-orm': '^0.45.2',
     },
     devDependencies: {
@@ -333,7 +333,7 @@ function databasePackageJson() {
 function rootEnvFile(withDatabase: boolean) {
   const lines = ['PORT=3001'];
   if (withDatabase) {
-    lines.push('DATABASE_URL=packages/database/data');
+    lines.push('DATABASE_URL=packages/database/data.db');
   }
   return `${lines.join('\n')}\n`;
 }
@@ -350,7 +350,7 @@ function printNextSteps(projectName: string, features: Feature[]) {
   console.log(`\n  ${chalk.dim('$')} cd ${projectName}`);
   console.log(`  ${chalk.dim('$')} bun dev`);
   if (features.includes('database')) {
-    console.log(`\n  PGlite is ready in ${chalk.cyan('packages/database/data')}.`);
+    console.log(`\n  SQLite is ready in ${chalk.cyan('packages/database/data.db')}.`);
     console.log(`  Use ${chalk.cyan('bun run db:studio')} to browse it.`);
   }
   console.log();

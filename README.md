@@ -34,9 +34,9 @@ The details panel follows the focused folder:
 
 - `apps/web` — TanStack Start · React Query · Chakra UI
 - `apps/api` — Elysia · typed HTTP API
-- `packages/database` — Drizzle · PGlite
+- `packages/database` — Drizzle · SQLite
 
-Selecting `packages/database` adds an in-process PGlite database. Create starts it once, applies the starter `users` table, and writes a root `.env` from `.env.example`. Data lives in `packages/database/data` and does not need Docker or PostgreSQL. Use `bun run db:ensure`, `bun run db:generate`, `bun run db:migrate`, `bun run db:push`, and `bun run db:studio` for Drizzle. No seed command is generated.
+Selecting `packages/database` adds an embedded SQLite database. Create prepares the file once, applies the starter `users` table, and writes a root `.env` from `.env.example`. Data lives in `packages/database/data.db` and does not need Docker. Use `bun run db:ensure`, `bun run db:generate`, `bun run db:migrate`, `bun run db:push`, and `bun run db:studio` for Drizzle. No seed command is generated.
 
 Every folder is optional. The generated integrations adapt to the selected tree: the API only imports the database package when both are selected. When web and API are selected together, the web app receives a fully typed Eden Treaty client inferred directly from the Elysia application.
 

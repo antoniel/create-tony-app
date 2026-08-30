@@ -1,6 +1,7 @@
 import { Box, Container, Flex } from '@chakra-ui/react'
 import type { QueryClient } from '@tanstack/react-query'
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
+import { Mesurer } from 'mesurer'
 import { chassisImage } from '../theme/build'
 import { AppSidebar, useRailCollapsed } from './-app-sidebar'
 import { Provider } from './-provider'
@@ -49,6 +50,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <Provider>{children}</Provider>
+        {import.meta.env.DEV && <Mesurer />}
         <Scripts />
       </body>
     </html>

@@ -167,9 +167,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                     </Flex>
                   </Popover.Anchor>
                 ) : (
-                  <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
                     <IconMark icon={group.icon} />
-                  </Flex>
                 )}
                 <Text
                   flex={collapsed ? '0' : '1'}
@@ -390,70 +388,70 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
           w="full"
           {...navRowProps(false)}
         >
-            <RailTip enabled={collapsed} label="setup">
-              <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
-                <IconMark icon={GearSix} />
-              </Flex>
-            </RailTip>
-            <Text
-              flex={collapsed ? '0' : '1'}
-              fontSize="sm"
-              letterSpacing="tight"
-              minW="0"
-              opacity={collapsed ? 0 : 1}
-              overflow="hidden"
-              textAlign="left"
-              transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
-              transition={fadeEase}
-              w={collapsed ? '0' : 'auto'}
-              whiteSpace="nowrap"
-            >
-              setup
-            </Text>
-            <Flex
-              flexShrink="0"
-              h="8"
-              opacity={collapsed ? 0 : 1}
-              overflow="hidden"
-              placeContent="center"
-              placeItems="center"
-              transition={fadeEase}
-              w={collapsed ? '0' : '8'}
-            >
-              <IconMark icon={mounted ? current.icon : Desktop} />
+          <RailTip enabled={collapsed} label="setup">
+            <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
+              <IconMark icon={GearSix} />
             </Flex>
+          </RailTip>
+          <Text
+            flex={collapsed ? '0' : '1'}
+            fontSize="sm"
+            letterSpacing="tight"
+            minW="0"
+            opacity={collapsed ? 0 : 1}
+            overflow="hidden"
+            textAlign="left"
+            transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
+            transition={fadeEase}
+            w={collapsed ? '0' : 'auto'}
+            whiteSpace="nowrap"
+          >
+            setup
+          </Text>
+          <Flex
+            flexShrink="0"
+            h="8"
+            opacity={collapsed ? 0 : 1}
+            overflow="hidden"
+            placeContent="center"
+            placeItems="center"
+            transition={fadeEase}
+            w={collapsed ? '0' : '8'}
+          >
+            <IconMark icon={mounted ? current.icon : Desktop} />
           </Flex>
+        </Flex>
       </Menu.Trigger>
       <Portal>
-      <Menu.Positioner>
-        <Menu.Content bg="app.surface" borderColor="app.border" minW="40" p="1" shadow="sm">
-          <Text
-            color="fg.muted"
-            fontFamily="mono"
-            fontSize="2xs"
-            letterSpacing="wide"
-            px="2"
-            py="1.5"
-          >
-            theme
-          </Text>
-          {themeModes.map((mode) => {
-            const active = mounted && theme === mode.id
-            return (
-              <Menu.Item
-                bg={active ? 'app.spot' : 'transparent'}
-                color={active ? 'fg' : 'fg.muted'}
-                gap="2"
-                key={mode.id}
-                value={mode.id}
-              >
-                <IconMark icon={mode.icon} />
-                <Text fontSize="sm">{mode.label}</Text>
-              </Menu.Item>
-            )
-          })}
-        </Menu.Content>
-      </Menu.Positioner>
+        <Menu.Positioner>
+          <Menu.Content bg="app.surface" borderColor="app.border" minW="40" p="1" shadow="sm">
+            <Text
+              color="fg.muted"
+              fontFamily="mono"
+              fontSize="2xs"
+              letterSpacing="wide"
+              px="2"
+              py="1.5"
+            >
+              theme
+            </Text>
+            {themeModes.map((mode) => {
+              const active = mounted && theme === mode.id
+              return (
+                <Menu.Item
+                  bg={active ? 'app.spot' : 'transparent'}
+                  color={active ? 'fg' : 'fg.muted'}
+                  gap="2"
+                  key={mode.id}
+                  value={mode.id}
+                >
+                  <IconMark icon={mode.icon} />
+                  <Text fontSize="sm">{mode.label}</Text>
+                </Menu.Item>
+              )
+            })}
+          </Menu.Content>
+        </Menu.Positioner>
       </Portal>
     </Menu.Root>
   )

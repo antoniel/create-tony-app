@@ -3,6 +3,7 @@ node_modules
 dist
 .output
 routeTree.gen.ts
-packages/database/data
+packages/database/*.db
+packages/database/*.db-*
 .env
 .DS_Store

@@ -31,7 +31,13 @@ function shouldIgnore(relative) {
   }
 
   const base = parts[parts.length - 1];
-  return !base || IGNORED_FILES.has(base) || base.endsWith('.log') || base.endsWith('.tsbuildinfo');
+  return (
+    !base ||
+    IGNORED_FILES.has(base) ||
+    base.endsWith('.log') ||
+    base.endsWith('.tsbuildinfo') ||
+    /\.db(?:-|$)/.test(base)
+  );
 }
 
 function templateTarget(relative, features) {
@@ -83,7 +89,7 @@ function templateTarget(relative, features) {
 
   if (relative.startsWith('packages/database/')) {
     const rest = relative.slice('packages/database/'.length);
-    if (!rest || rest === 'data' || rest.startsWith('data/')) {
+    if (!rest || rest === 'data' || rest.startsWith('data/') || /\.db(?:-|$)/.test(rest)) {
       return null;
     }
     return `templates/database/${rest}`;
