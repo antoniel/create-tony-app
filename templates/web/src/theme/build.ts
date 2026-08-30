@@ -181,6 +181,7 @@ ${brand}
       },
       slotRecipes: {
         menu: {
+          slots: ['item'],
           variants: {
             variant: {
               subtle: {
@@ -390,6 +391,7 @@ export function buildThemeConfig(draft: ThemeDraft) {
       },
       slotRecipes: {
         menu: {
+          slots: ['item'],
           variants: {
             variant: {
               subtle: {

@@ -1,14 +1,7 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
-import { DesignSystemPage } from './-design-system'
-import { healthService } from '../modules/health'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  loader: ({ context }) => context.queryClient.ensureQueryData(healthService.queryOptions()),
-  component: Home,
+  beforeLoad: () => {
+    throw redirect({ to: '/components' })
+  },
 })
-
-function Home() {
-  const { data } = useSuspenseQuery(healthService.queryOptions())
-  return <DesignSystemPage status={data.status} />
-}

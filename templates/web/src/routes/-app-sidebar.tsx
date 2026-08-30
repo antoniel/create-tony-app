@@ -12,23 +12,18 @@ import {
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
 import {
   CaretRight,
-  Circle,
   Cube,
   Desktop,
-  Faders,
-  File,
   GearSix,
   Moon,
-  Plugs,
   SidebarSimple,
-  StackSimple,
+  SquaresFour,
   Sun,
-  Swatches,
-  TextT,
 } from '@phosphor-icons/react/ssr'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { componentPages, componentTo } from '../lib/pages'
 import { chassisImage } from '../theme/build'
 import { navRowProps } from './-nav-mark'
 
@@ -43,24 +38,20 @@ const themeModes = [
 
 const nav = [
   {
-    label: 'plate',
-    icon: StackSimple,
-    items: [{ to: '/', label: 'system', exact: true, spec: '01', icon: Swatches }],
-  },
-  {
-    label: 'port',
-    icon: Plugs,
+    label: 'components',
+    icon: Cube,
     items: [
-      { to: '/components/buttons', label: 'buttons', spec: '02', icon: Cube },
-      { to: '/components/marks', label: 'marks', spec: '03', icon: Circle },
-      { to: '/components/url', label: 'url', spec: '04', icon: Plugs },
-      { to: '/theme/seed', label: 'seed', spec: '05', icon: Faders },
-      { to: '/theme/surfaces', label: 'surf', spec: '06', icon: Swatches },
-      { to: '/theme/fonts', label: 'type', spec: '07', icon: TextT },
-      { to: '/theme/file', label: 'file', spec: '08', icon: File },
+      { href: '/components', label: 'all', exact: true as const, spec: '00', icon: SquaresFour },
+      ...componentPages.map((page) => ({
+        href: `/components/${page.index}`,
+        params: componentTo(page.index).params,
+        label: page.label,
+        spec: page.spec,
+        icon: Cube,
+      })),
     ],
   },
-] as const
+]
 
 export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
@@ -325,8 +316,12 @@ function GroupChildren({
       {group.items.map((item) => {
         const active = itemActive(pathname, item)
         return (
-          <ChakraLink asChild display="block" key={item.to} textDecoration="none" w="full">
-            <Link to={item.to} onClick={onSelect}>
+          <ChakraLink asChild display="block" key={item.href} textDecoration="none" w="full">
+            <Link
+              params={'params' in item ? item.params : undefined}
+              to={'params' in item ? '/components/$index' : '/components'}
+              onClick={onSelect}
+            >
               <Flex align="center" gap="2" h="8" pr="3" w="full" {...navRowProps(active)}>
                 <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
                   <IconMark icon={item.icon} />
@@ -356,7 +351,7 @@ function GroupChildren({
 function SetupMenu({ collapsed }: { collapsed: boolean }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const trigger = useRef<HTMLElement>(null)
+  const trigger = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -366,7 +361,6 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
 
   return (
     <Menu.Root
-      closeOnInteractOutside
       onSelect={(details) => setTheme(details.value)}
       positioning={{
         gutter: 12,
@@ -463,7 +457,7 @@ function currentItem(pathname: string) {
 }
 
 function itemActive(pathname: string, item: (typeof nav)[number]['items'][number]) {
-  return 'exact' in item && item.exact ? pathname === item.to : pathname.startsWith(item.to)
+  return 'exact' in item && item.exact ? pathname === item.href : pathname.startsWith(item.href)
 }
 
 function closedRail() {

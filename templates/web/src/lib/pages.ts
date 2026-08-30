@@ -1,41 +1,98 @@
-export const componentPages = [
-  { index: 'buttons', label: 'buttons', spec: '02' },
-  { index: 'marks', label: 'marks', spec: '03' },
-  { index: 'url', label: 'url', spec: '04' },
+export const componentIndexes = [
+  'accordion',
+  'action-bar',
+  'alert',
+  'avatar',
+  'badge',
+  'blockquote',
+  'breadcrumb',
+  'button',
+  'card',
+  'carousel',
+  'checkbox',
+  'checkbox-card',
+  'clipboard',
+  'close-button',
+  'code',
+  'color-picker',
+  'combobox',
+  'data-list',
+  'dialog',
+  'drawer',
+  'empty-state',
+  'field',
+  'file-upload',
+  'floating-panel',
+  'heading',
+  'hover-card',
+  'icon-button',
+  'input',
+  'input-group',
+  'kbd',
+  'link-button',
+  'menu',
+  'native-select',
+  'number-input',
+  'pagination',
+  'password-input',
+  'pin-input',
+  'popover',
+  'progress',
+  'progress-circle',
+  'prose',
+  'qr-code',
+  'radio',
+  'radio-card',
+  'rating',
+  'segmented-control',
+  'select',
+  'separator',
+  'skeleton',
+  'slider',
+  'spinner',
+  'splitter',
+  'stat',
+  'status',
+  'stepper-input',
+  'steps',
+  'switch',
+  'table',
+  'tabs',
+  'tag',
+  'tags-input',
+  'textarea',
+  'timeline',
+  'toaster',
+  'toggle',
+  'toggle-tip',
+  'tooltip',
 ] as const
 
-export const themePages = [
-  { index: 'seed', label: 'seed', spec: '05' },
-  { index: 'surfaces', label: 'surf', spec: '06' },
-  { index: 'fonts', label: 'type', spec: '07' },
-  { index: 'file', label: 'file', spec: '08' },
-] as const
+export type ComponentIndex = (typeof componentIndexes)[number]
 
-export type ComponentIndex = (typeof componentPages)[number]['index']
-export type ThemeIndex = (typeof themePages)[number]['index']
+export const componentPages = componentIndexes.map((index, i) => ({
+  index,
+  label: index.replaceAll('-', ' '),
+  spec: String(i + 1).padStart(2, '0'),
+}))
 
 export function componentTo(index: ComponentIndex) {
-  return `/components/${index}` as const
+  return {
+    to: '/components/$index' as const,
+    params: { index },
+  }
 }
 
-export function themeTo(index: ThemeIndex) {
-  return `/theme/${index}` as const
+export function componentPath(index: ComponentIndex) {
+  return `/components/${index}`
 }
 
 export function isComponentIndex(value: string): value is ComponentIndex {
-  return componentPages.some((page) => page.index === value)
-}
-
-export function isThemeIndex(value: string): value is ThemeIndex {
-  return themePages.some((page) => page.index === value)
+  return (componentIndexes as readonly string[]).includes(value)
 }
 
 export const componentPager = componentPages.map((page) => ({
-  to: componentTo(page.index),
-  label: page.label,
-}))
-
-export const themePager = themePages.map((page) => ({
-  to: themeTo(page.index),
+  ...componentTo(page.index),
+  href: componentPath(page.index),
   label: page.label,
 }))

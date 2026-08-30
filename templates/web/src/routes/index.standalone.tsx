@@ -1,10 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { DesignSystemPage } from './-design-system'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: Home,
+  beforeLoad: () => {
+    throw redirect({ to: '/components' })
+  },
 })
-
-function Home() {
-  return <DesignSystemPage />
-}

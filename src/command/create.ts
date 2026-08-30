@@ -267,6 +267,7 @@ function webPackageJson(withApi: boolean) {
       nuqs: '^2.10.1',
       react: '^19.2.0',
       'react-dom': '^19.2.0',
+      'react-icons': '^5.5.0',
     },
     devDependencies: {
       ...(withApi
