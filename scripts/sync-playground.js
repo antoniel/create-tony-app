@@ -52,6 +52,10 @@ function templateTarget(relative, features) {
     return `templates/root/${relative}`;
   }
 
+  if (relative.startsWith('tools/oxlint/')) {
+    return `templates/root/${relative}`;
+  }
+
   if (relative.startsWith('apps/web/')) {
     const rest = relative.slice('apps/web/'.length);
     if (rest === 'src/routes/index.tsx') {

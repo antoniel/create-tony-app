@@ -17,7 +17,7 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import { useTheme } from 'next-themes'
 import { useEffect, useState, type ReactNode } from 'react'
 import { chassisImage } from '../theme/build'
-import { navMarks, navRowProps, parseNavMarkMenuValue, setNavMark, useNavMark } from './nav-mark'
+import { navRowProps } from './nav-mark'
 
 const frameEase = 'width 0.32s cubic-bezier(0.16, 1, 0.3, 1)'
 const fadeEase = 'opacity 0.18s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1)'
@@ -54,7 +54,8 @@ function currentItem(pathname: string) {
 }
 
 const closedRail = () => Object.fromEntries(nav.map((group) => [group.label, false]))
-let savedOpen = closedRail()
+let savedAccordion = closedRail()
+let savedFlyout = closedRail()
 let savedCollapsed = false
 
 export function useRailCollapsed() {
@@ -112,13 +113,13 @@ function RailTip({
 function GroupChildren({
   group,
   inset,
-  mark,
   pathname,
+  onSelect,
 }: {
   group: (typeof nav)[number]
   inset: boolean
-  mark: ReturnType<typeof useNavMark>[0]
   pathname: string
+  onSelect?: () => void
 }) {
   return (
     <Stack
@@ -135,14 +136,14 @@ function GroupChildren({
         const active = itemActive(pathname, item)
         return (
           <ChakraLink asChild display="block" key={item.to} textDecoration="none" w="full">
-            <Link to={item.to}>
+            <Link to={item.to} onClick={onSelect}>
               <Flex
                 align="center"
                 gap="2"
                 h="8"
                 pr="3"
                 w="full"
-                {...navRowProps(mark, active)}
+                {...navRowProps(active)}
               >
                 <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
                   <IconMark icon={item.icon} />
@@ -202,12 +203,27 @@ function IconButton({
 export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const current = currentItem(pathname)
-  const [mark] = useNavMark()
-  const [open, setOpen] = useState<Record<string, boolean>>(savedOpen)
+  const [accordion, setAccordion] = useState<Record<string, boolean>>(savedAccordion)
+  const [flyout, setFlyout] = useState<Record<string, boolean>>(savedFlyout)
+
+  useEffect(() => {
+    savedFlyout = closedRail()
+    setFlyout(savedFlyout)
+  }, [collapsed])
+
+  const closeFlyout = () => {
+    savedFlyout = closedRail()
+    setFlyout(savedFlyout)
+  }
 
   const toggleGroup = (label: string) => {
-    savedOpen = { ...savedOpen, [label]: !savedOpen[label] }
-    setOpen(savedOpen)
+    if (collapsed) {
+      savedFlyout = { ...closedRail(), [label]: !savedFlyout[label] }
+      setFlyout(savedFlyout)
+      return
+    }
+    savedAccordion = { ...savedAccordion, [label]: !savedAccordion[label] }
+    setAccordion(savedAccordion)
   }
 
   return (
@@ -259,7 +275,9 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
 
         <Stack flex="1" gap="1" py="4" w="full">
           {nav.map((group) => {
-            const expanded = open[group.label] ?? false
+            const expanded = collapsed
+              ? (flyout[group.label] ?? false)
+              : (accordion[group.label] ?? false)
             const groupActive = group.items.some((item) => itemActive(pathname, item))
 
             const groupButton = (
@@ -273,7 +291,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                 h="8"
                 px="3"
                 w="full"
-                {...navRowProps(mark, false, groupActive)}
+                {...navRowProps(false, groupActive)}
                 onClick={() => toggleGroup(group.label)}
               >
                 {collapsed ? (
@@ -364,7 +382,12 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                           >
                             {group.label}
                           </Text>
-                          <GroupChildren group={group} inset={false} mark={mark} pathname={pathname} />
+                          <GroupChildren
+                            group={group}
+                            inset={false}
+                            onSelect={closeFlyout}
+                            pathname={pathname}
+                          />
                         </Popover.Content>
                       </Popover.Positioner>
                     </Portal>
@@ -373,7 +396,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                   <>
                     {groupButton}
                     {expanded ? (
-                      <GroupChildren group={group} inset mark={mark} pathname={pathname} />
+                      <GroupChildren group={group} inset pathname={pathname} />
                     ) : null}
                   </>
                 )}
@@ -382,7 +405,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
           })}
         </Stack>
 
-        <SetupMenu collapsed={collapsed} mark={mark} />
+        <SetupMenu collapsed={collapsed} />
       </Flex>
 
       <Flex align="center" h="10" position="absolute" right="3" top="2">
@@ -396,13 +419,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
   )
 }
 
-function SetupMenu({
-  collapsed,
-  mark,
-}: {
-  collapsed: boolean
-  mark: ReturnType<typeof useNavMark>[0]
-}) {
+function SetupMenu({ collapsed }: { collapsed: boolean }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -414,14 +431,7 @@ function SetupMenu({
 
   return (
     <Menu.Root
-      onSelect={(details) => {
-        const mark = parseNavMarkMenuValue(details.value)
-        if (mark) {
-          setNavMark(mark)
-          return
-        }
-        setTheme(details.value)
-      }}
+      onSelect={(details) => setTheme(details.value)}
       positioning={{ placement: collapsed ? 'right-end' : 'top-start' }}
     >
       <RailTip enabled={collapsed} label="setup">
@@ -437,7 +447,7 @@ function SetupMenu({
           px="3"
           type="button"
           w="full"
-          {...navRowProps(mark, false)}
+          {...navRowProps(false)}
         >
           <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
             <IconMark icon={GearSix} />
@@ -490,30 +500,6 @@ function SetupMenu({
               >
                 <IconMark icon={mode.icon} />
                 <Text fontSize="sm">{mode.label}</Text>
-              </Menu.Item>
-            )
-          })}
-          <Text
-            color="fg.muted"
-            fontFamily="mono"
-            fontSize="2xs"
-            letterSpacing="wide"
-            px="2"
-            py="1.5"
-          >
-            mark
-          </Text>
-          {navMarks.map((option) => {
-            const active = mark === option.id
-            return (
-              <Menu.Item
-                bg={active ? 'app.spot' : 'transparent'}
-                color={active ? 'fg' : 'fg.muted'}
-                gap="2"
-                key={option.id}
-                value={`mark:${option.id}`}
-              >
-                <Text fontSize="sm">{option.title}</Text>
               </Menu.Item>
             )
           })}

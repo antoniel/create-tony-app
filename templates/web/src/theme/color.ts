@@ -84,17 +84,19 @@ function liftTowardMetal(hex: string, step: keyof typeof lightMix) {
 
 export function brandFromSeed(seed: string) {
   const hex = normalizeHex(seed) ?? '#434343'
-  return Object.fromEntries(
-    brandSteps.map((step) => {
-      if (step === '500') {
-        return [step, hex]
-      }
-      if (step in lightMix) {
-        return [step, liftTowardMetal(hex, step as keyof typeof lightMix)]
-      }
-      return [step, mixHex(hex, '#000000', darkMix[step as keyof typeof darkMix])]
-    }),
-  ) as Record<BrandStep, string>
+  return {
+    '50': liftTowardMetal(hex, '50'),
+    '100': liftTowardMetal(hex, '100'),
+    '200': liftTowardMetal(hex, '200'),
+    '300': liftTowardMetal(hex, '300'),
+    '400': liftTowardMetal(hex, '400'),
+    '500': hex,
+    '600': mixHex(hex, '#000000', darkMix['600']),
+    '700': mixHex(hex, '#000000', darkMix['700']),
+    '800': mixHex(hex, '#000000', darkMix['800']),
+    '900': mixHex(hex, '#000000', darkMix['900']),
+    '950': mixHex(hex, '#000000', darkMix['950']),
+  } satisfies Record<BrandStep, string>
 }
 
 export function surfacesFromSeed(seed: string) {

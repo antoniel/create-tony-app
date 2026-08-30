@@ -1,38 +1,41 @@
-interface EdenResponse {
-  data: unknown
-  error: unknown
-  response: Response
-  status: number
-  headers: HeadersInit | undefined
+type EdenResult<TData, TError> = {
+  data: TData | null | undefined
+  error: TError | null | undefined
 }
 
-type EdenMethod = (...args: any[]) => Promise<EdenResponse>
-type EdenData<TMethod extends EdenMethod> = NonNullable<
-  Awaited<ReturnType<TMethod>>['data']
->
-
-export function edenQueryFn<TMethod extends EdenMethod>(
-  method: TMethod,
-  ...args: Parameters<TMethod>
+export function edenQueryFn<TData, TError, const TArgs extends readonly unknown[]>(
+  method: (...args: TArgs) => Promise<EdenResult<TData, TError>>,
+  ...args: TArgs
 ) {
-  return async (): Promise<EdenData<TMethod>> => {
+  return async (): Promise<TData> => {
     const { data, error } = await method(...args)
 
-    if (error) throw error
+    if (error) {
+      throw error
+    }
 
-    return data as EdenData<TMethod>
+    if (data == null) {
+      throw new Error('Eden returned no data')
+    }
+
+    return data
   }
 }
 
-export function edenMutationFn<TMethod extends EdenMethod>(method: TMethod) {
-  type Variables = Parameters<TMethod>[0]
+export function edenMutationFn<TData, TError, TVariables>(
+  method: (variables: TVariables) => Promise<EdenResult<TData, TError>>,
+) {
+  return async (variables: TVariables): Promise<TData> => {
+    const { data, error } = await method(variables)
 
-  return async (variables: Variables): Promise<EdenData<TMethod>> => {
-    const args = [variables] as unknown as Parameters<TMethod>
-    const { data, error } = await method(...args)
+    if (error) {
+      throw error
+    }
 
-    if (error) throw error
+    if (data == null) {
+      throw new Error('Eden returned no data')
+    }
 
-    return data as EdenData<TMethod>
+    return data
   }
 }

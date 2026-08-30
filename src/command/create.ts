@@ -95,6 +95,7 @@ async function writeRootPackageJson(projectPath: string, selection: ProjectSelec
   await fs.outputJSON(path.join(projectPath, 'package.json'), {
     name: selection.projectName,
     private: true,
+    type: 'module',
     packageManager: 'bun@1.3.14',
     workspaces: ['apps/*', 'packages/*'],
     scripts: {
@@ -107,6 +108,7 @@ async function writeRootPackageJson(projectPath: string, selection: ProjectSelec
       ...databaseScripts,
     },
     devDependencies: {
+      '@oxlint/plugins': '^1.80.0',
       '@types/bun': '^1.3.10',
       '@types/node': '^22.10.2',
       oxfmt: '^0.65.0',

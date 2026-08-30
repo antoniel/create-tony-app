@@ -3,8 +3,21 @@
   "singleQuote": true,
   "trailingComma": "all",
   "ignorePatterns": [
+    "**/node_modules/**",
     "**/dist/**",
     "**/.output/**",
-    "**/routeTree.gen.ts"
+    "**/routeTree.gen.ts",
+    ".agent/**",
+    ".agents/**",
+    ".claude/**",
+    ".codex/**",
+    ".continue/**",
+    ".cursor/**",
+    ".gemini/**",
+    ".opencode/**",
+    ".pi/**",
+    ".roo/**",
+    ".windsurf/**",
+    "tools/oxlint/anti-slop/**"
   ]
 }
