@@ -1,6 +1,6 @@
 {
   "name": "create-tony-app",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "Antoniel <antoniel2210@gmail.com>",
   "description": "Compose a Bun monorepo from a visual project tree",
   "license": "MIT",
