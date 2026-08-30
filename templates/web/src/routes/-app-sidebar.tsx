@@ -28,7 +28,7 @@ import {
 } from '@phosphor-icons/react/ssr'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useTheme } from 'next-themes'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { chassisImage } from '../theme/build'
 import { navRowProps } from './-nav-mark'
 
@@ -106,11 +106,12 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
         direction="column"
         h="full"
         minW={collapsed ? '14' : '56'}
-        overflow="auto"
+        overflowX="hidden"
+        overflowY="auto"
         transition={frameEase}
         w={collapsed ? '14' : '56'}
       >
-        <Flex align="center" h="10" justify="space-between" px="3" w="full">
+        <Flex align="center" h="10" justify="space-between" overflow="hidden" px="3" w="full">
           <ChakraLink asChild>
             <Link to="/">
               <Flex
@@ -118,9 +119,11 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                 gap="3"
                 minW="0"
                 opacity={collapsed ? 0 : 1}
+                overflow="hidden"
                 pointerEvents={collapsed ? 'none' : 'auto'}
                 transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
                 transition={fadeEase}
+                w={collapsed ? '0' : 'auto'}
               >
                 <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="widest">
                   TONY
@@ -132,7 +135,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
               </Flex>
             </Link>
           </ChakraLink>
-          <Box flexShrink="0" w="8" />
+          <Box flexShrink="0" overflow="hidden" w={collapsed ? '0' : '8'} />
         </Flex>
 
         <Stack flex="1" gap="1" py="4" w="full">
@@ -149,8 +152,9 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                 aria-expanded={expanded}
                 aria-label={collapsed ? group.label : undefined}
                 cursor="pointer"
-                gap="2"
+                gap={collapsed ? '0' : '2'}
                 h="8"
+                overflow="hidden"
                 px="3"
                 w="full"
                 {...navRowProps(false, groupActive)}
@@ -168,24 +172,30 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                   </Flex>
                 )}
                 <Text
-                  flex="1"
+                  flex={collapsed ? '0' : '1'}
                   fontSize="sm"
                   letterSpacing="tight"
+                  minW="0"
                   opacity={collapsed ? 0 : 1}
+                  overflow="hidden"
                   textAlign="left"
                   transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
                   transition={fadeEase}
+                  w={collapsed ? '0' : 'auto'}
+                  whiteSpace="nowrap"
                 >
                   {group.label}
                 </Text>
                 <Flex
                   color="fg.muted"
+                  flexShrink="0"
                   h="8"
                   opacity={collapsed ? 0 : 1}
+                  overflow="hidden"
                   placeContent="center"
                   placeItems="center"
                   transition={fadeEase}
-                  w="8"
+                  w={collapsed ? '0' : '8'}
                 >
                   <Box
                     transform={expanded ? 'rotate(90deg)' : 'none'}
@@ -202,8 +212,12 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
                 {collapsed ? (
                   <Popover.Root
                     autoFocus={false}
-                    closeOnInteractOutside={false}
                     open={expanded}
+                    onOpenChange={(details) => {
+                      if (!details.open) {
+                        closeFlyout()
+                      }
+                    }}
                     positioning={{
                       gutter: 12,
                       placement: 'right-start',
@@ -344,6 +358,7 @@ function GroupChildren({
 function SetupMenu({ collapsed }: { collapsed: boolean }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const trigger = useRef<HTMLElement>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -353,49 +368,63 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
 
   return (
     <Menu.Root
+      closeOnInteractOutside
       onSelect={(details) => setTheme(details.value)}
-      positioning={{ placement: collapsed ? 'right-end' : 'top-start' }}
+      positioning={{
+        gutter: 12,
+        placement: 'right-end',
+        getAnchorRect: () => trigger.current?.getBoundingClientRect() ?? null,
+      }}
     >
-      <RailTip enabled={collapsed} label="setup">
-        <Menu.Trigger asChild>
-          <Flex
-            as="button"
-            align="center"
-            aria-label={collapsed ? 'setup' : undefined}
-            cursor="pointer"
-            gap="2"
-            h="10"
-            px="3"
-            w="full"
-            {...navRowProps(false)}
-          >
-            <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
-              <IconMark icon={GearSix} />
-            </Flex>
+      <Menu.Trigger asChild>
+        <Flex
+          as="button"
+          ref={trigger}
+          align="center"
+          aria-label={collapsed ? 'setup' : undefined}
+          cursor="pointer"
+          gap={collapsed ? '0' : '2'}
+          h="10"
+          overflow="hidden"
+          px="3"
+          w="full"
+          {...navRowProps(false)}
+        >
+            <RailTip enabled={collapsed} label="setup">
+              <Flex flexShrink="0" h="8" placeContent="center" placeItems="center" w="8">
+                <IconMark icon={GearSix} />
+              </Flex>
+            </RailTip>
             <Text
-              flex="1"
+              flex={collapsed ? '0' : '1'}
               fontSize="sm"
               letterSpacing="tight"
+              minW="0"
               opacity={collapsed ? 0 : 1}
+              overflow="hidden"
               textAlign="left"
               transform={collapsed ? 'translateX(-0.5rem)' : 'none'}
               transition={fadeEase}
+              w={collapsed ? '0' : 'auto'}
+              whiteSpace="nowrap"
             >
               setup
             </Text>
             <Flex
+              flexShrink="0"
               h="8"
               opacity={collapsed ? 0 : 1}
+              overflow="hidden"
               placeContent="center"
               placeItems="center"
               transition={fadeEase}
-              w="8"
+              w={collapsed ? '0' : '8'}
             >
               <IconMark icon={mounted ? current.icon : Desktop} />
             </Flex>
           </Flex>
-        </Menu.Trigger>
-      </RailTip>
+      </Menu.Trigger>
+      <Portal>
       <Menu.Positioner>
         <Menu.Content bg="app.surface" borderColor="app.border" minW="40" p="1" shadow="sm">
           <Text
@@ -425,6 +454,7 @@ function SetupMenu({ collapsed }: { collapsed: boolean }) {
           })}
         </Menu.Content>
       </Menu.Positioner>
+      </Portal>
     </Menu.Root>
   )
 }
