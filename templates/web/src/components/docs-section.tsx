@@ -1,13 +1,5 @@
-import { Container, Flex, Heading, Stack, Text } from '@chakra-ui/react'
+import { Flex, Heading, Stack, Text } from '@chakra-ui/react'
 import type { ReactNode } from 'react'
-
-export function PageFrame({ children }: { children: ReactNode }) {
-  return (
-    <Container maxW="6xl" pb={{ base: '10', md: '16' }} pt="2">
-      {children}
-    </Container>
-  )
-}
 
 export function PageIntro({
   spec,

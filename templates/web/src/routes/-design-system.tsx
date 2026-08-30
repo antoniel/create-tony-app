@@ -1,6 +1,6 @@
 import { Box, Code, Flex, Grid, Stack, Text } from '@chakra-ui/react'
+import { DocsSection, PageIntro } from '../components/docs-section'
 import { brandSteps, defaultDraft } from '../theme/draft'
-import { DocsSection, PageFrame, PageIntro } from '../components/docs-section'
 
 const brandScale = brandSteps.map((step) => [step, defaultDraft.brand[step]] as const)
 
@@ -52,11 +52,11 @@ const edges = [
 
 export function DesignSystemPage({ status }: { status?: string }) {
   return (
-    <PageFrame>
+    <>
       <Stack gap="16">
-        <PageIntro spec={`01${status ? `  ·  ${status}` : ''}`} title="LM 5–180">
+        <PageIntro spec={`01${status ? `  ·  ${status}` : ''}`} title="Design System">
           <Text color="fg.muted">
-            titanium chassis, white insert. tokens in <Code>apps/web/src/theme/index.ts</Code>
+            Design System for the Tony project.
           </Text>
         </PageIntro>
 
@@ -163,6 +163,6 @@ export function DesignSystemPage({ status }: { status?: string }) {
           </Grid>
         </DocsSection>
       </Stack>
-    </PageFrame>
+    </>
   )
 }

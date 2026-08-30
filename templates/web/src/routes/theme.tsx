@@ -1,7 +1,7 @@
-import { Button, Flex, Stack, Text, Code } from '@chakra-ui/react'
+import { Button, Code, Flex, Stack, Text } from '@chakra-ui/react'
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
-import { PageFrame, PageIntro } from '../components/docs-section'
+import { PageIntro } from '../components/docs-section'
 import { PagePager } from '../components/page-pager'
 import { themePager } from '../lib/pages'
 import { useThemeStudio } from '../theme/studio'
@@ -26,7 +26,7 @@ function ThemeLayout() {
   }
 
   return (
-    <PageFrame>
+    <>
       <Stack gap="16">
         <PageIntro maxW="3xl" spec="05" title="tune">
           <Text color="fg.muted">
@@ -44,6 +44,6 @@ function ThemeLayout() {
         <Outlet />
         {PagePager(themePager)}
       </Stack>
-    </PageFrame>
+    </>
   )
 }
