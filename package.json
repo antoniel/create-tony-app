@@ -12,6 +12,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "node scripts/dev.js",
     "start": "tsc -p tsconfig.json --watch",
+    "test": "true",
     "release": "np"
   },
   "files": [
