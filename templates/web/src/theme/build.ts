@@ -21,6 +21,7 @@ const config = defineConfig({
   globalCss: {
     'html, body': {
       minHeight: '100%',
+      overscrollBehavior: 'none',
     },
     body: {
       bgColor: 'app.bg',
@@ -211,6 +212,7 @@ export function buildThemeConfig(draft: ThemeDraft) {
     globalCss: {
       'html, body': {
         minHeight: '100%',
+        overscrollBehavior: 'none',
       },
       body: {
         bgColor: 'app.bg',
