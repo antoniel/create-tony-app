@@ -44,8 +44,8 @@ API features are organized as lightweight vertical modules with colocated `*.mod
 
 Matching web modules expose React Query options from `*.service.ts` files. Request, response, and error types are inferred from Eden Treaty with `Parameters`, `Treaty.Data`, and `Treaty.Error`, so the frontend does not duplicate API contracts.
 
-Web styling uses Chakra UI with a generated provider and customizable system theme. Brand tokens, semantic surface tokens, global styles, and light/dark color values live in `apps/web/src/theme/index.ts`.
+Web UI is a Chakra kit in `apps/web/src/components/ui` — one file per component, with the look in that file. `/components` is the gallery. The Chakra system in `apps/web/src/theme` stays behind the scenes.
 
 Web projects include [Code Inspector](https://inspector.fe-dev.cn/en/) in Vite. In `bun dev`, hold Option+Shift (Mac) or Alt+Shift (Windows) and click a DOM node to open the source file in the editor.
 
-Web projects also include nuqs for type-safe URL state. Its TanStack Router adapter is mounted in the shared provider, with a small generated example showing query-string state alongside Chakra components.
+Web projects also include nuqs for type-safe URL state. Its TanStack Router adapter is mounted in the shared provider.

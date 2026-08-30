@@ -2,15 +2,18 @@ import { Flex, Link as ChakraLink, Text } from '@chakra-ui/react'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react/ssr'
 import { Link, useRouterState } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import type { ComponentIndex } from '../lib/pages'
 
 type PageLink = {
-  to: string
+  to: '/components/$index'
+  params: { index: ComponentIndex }
+  href: string
   label: string
 }
 
 export function PagePager(pages: readonly PageLink[]) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
-  const index = pages.findIndex((page) => page.to === pathname)
+  const index = pages.findIndex((page) => page.href === pathname)
   const page = pages[index]
   const prev = index > 0 ? pages[index - 1] : undefined
   const next = index >= 0 ? pages[index + 1] : undefined
@@ -27,7 +30,7 @@ export function PagePager(pages: readonly PageLink[]) {
       pt="6"
     >
       {prev ? (
-        <PagerLink label={prev.label} to={prev.to}>
+        <PagerLink label={prev.label} params={prev.params}>
           <CaretLeft size={12} weight="light" />
           {prev.label}
         </PagerLink>
@@ -40,7 +43,7 @@ export function PagePager(pages: readonly PageLink[]) {
         {page ? `${current} / ${total}` : total}
       </Text>
       {next ? (
-        <PagerLink label={next.label} to={next.to}>
+        <PagerLink label={next.label} params={next.params}>
           {next.label}
           <CaretRight size={12} weight="light" />
         </PagerLink>
@@ -54,17 +57,17 @@ export function PagePager(pages: readonly PageLink[]) {
 }
 
 function PagerLink({
-  to,
+  params,
   label,
   children,
 }: {
-  to: string
+  params: { index: ComponentIndex }
   label: string
   children: ReactNode
 }) {
   return (
     <ChakraLink asChild color="fg.muted" _hover={{ color: 'fg' }}>
-      <Link aria-label={label} to={to}>
+      <Link aria-label={label} params={params} to="/components/$index">
         <Flex align="center" fontFamily="mono" fontSize="2xs" gap="2" letterSpacing="wide">
           {children}
         </Flex>

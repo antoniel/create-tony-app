@@ -1,0 +1,6 @@
+.mesurer-root .msr\:z-\[90\]:has(.mesurer-toolbar-surface) {
+  top: auto !important;
+  left: auto !important;
+  right: 16px;
+  bottom: 16px;
+}
