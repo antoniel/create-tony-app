@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', '.output', '.turbo', 'data']);
+const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', '.output', '.turbo', 'data', 'fixtures']);
 const IGNORED_FILES = new Set([
   'package.json',
   'routeTree.gen.ts',
@@ -10,6 +10,19 @@ const IGNORED_FILES = new Set([
   'bun.lockb',
   'package-lock.json',
   'README.md',
+]);
+
+// App-only playground files. They map onto templates but must not become the starter.
+const APP_ONLY_PREFIXES = [
+  'apps/api/src/modules/bundles/',
+  'apps/web/src/modules/bundles/',
+  'apps/web/src/routes/bundles/',
+];
+const APP_ONLY_FILES = new Set([
+  'apps/api/src/app.ts',
+  'apps/web/src/routes/-app-sidebar.tsx',
+  'packages/database/src/index.ts',
+  'packages/database/src/schema.ts',
 ]);
 
 function inferFeatures(projectPath) {
@@ -34,6 +47,8 @@ function shouldIgnore(relative) {
   return (
     !base ||
     IGNORED_FILES.has(base) ||
+    APP_ONLY_FILES.has(relative) ||
+    APP_ONLY_PREFIXES.some((prefix) => relative.startsWith(prefix)) ||
     base.endsWith('.log') ||
     base.endsWith('.tsbuildinfo') ||
     /\.db(?:-|$)/.test(base)
@@ -140,6 +155,27 @@ function syncFile(root, projectPath, relative, features) {
   console.log(`  ↺ ${relative} → ${target}`);
 }
 
+function walkFiles(dir, relativePrefix, visit) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const relative = relativePrefix ? `${relativePrefix}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      if (IGNORED_DIRS.has(entry.name)) {
+        continue;
+      }
+      walkFiles(path.join(dir, entry.name), relative, visit);
+      continue;
+    }
+    visit(relative);
+  }
+}
+
+function syncPlayground(root, projectPath) {
+  const features = inferFeatures(projectPath);
+  walkFiles(projectPath, '', (relative) => {
+    syncFile(root, projectPath, relative, features);
+  });
+}
+
 function startPlaygroundSync(root, projectPath) {
   const features = inferFeatures(projectPath);
   const pending = new Map();
@@ -175,4 +211,49 @@ function startPlaygroundSync(root, projectPath) {
   };
 }
 
-module.exports = { startPlaygroundSync, templateTarget };
+function resolvePlayground(root, projectName) {
+  const playground = path.join(root, '.playground');
+  const projectPath = path.join(playground, projectName);
+
+  if (!fs.existsSync(projectPath)) {
+    throw new Error(`Playground not found: ${projectPath}`);
+  }
+
+  return projectPath;
+}
+
+function main() {
+  const root = path.resolve(__dirname, '..');
+  const args = process.argv.slice(2).filter((arg) => arg !== '--');
+  const watch = args.includes('--watch');
+  const projectName = args.find((arg) => !arg.startsWith('--')) || 'tony-pipelines';
+  const projectPath = resolvePlayground(root, projectName);
+
+  console.log(`  Sync ${projectPath} → templates\n`);
+  syncPlayground(root, projectPath);
+
+  if (!watch) {
+    return;
+  }
+
+  const stop = startPlaygroundSync(root, projectPath);
+  process.on('SIGINT', () => {
+    stop();
+    process.exit(0);
+  });
+  process.on('SIGTERM', () => {
+    stop();
+    process.exit(0);
+  });
+}
+
+if (require.main === module) {
+  try {
+    main();
+  } catch (error) {
+    console.error(`  ${error.message}`);
+    process.exit(1);
+  }
+}
+
+module.exports = { startPlaygroundSync, syncPlayground, templateTarget };

@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { Carousel } from "@chakra-ui/react"
-import { Box, IconButton, Image } from "@chakra-ui/react"
-import * as React from "react"
-import { LuPause, LuPlay } from "react-icons/lu"
+import { Carousel } from '@chakra-ui/react'
+import { Box, IconButton, Image } from '@chakra-ui/react'
+import * as React from 'react'
+import { LuPause, LuPlay } from 'react-icons/lu'
 
 interface CarouselRootProps extends Carousel.RootProps {
   withAutoplay?: boolean
@@ -16,17 +16,9 @@ export const CarouselRoot = React.forwardRef<HTMLDivElement, CarouselRootProps>(
       <Carousel.Root {...rest} ref={ref}>
         {children}
         {withAutoplay && (
-          <Box
-            position="absolute"
-            bottom="var(--carousel-spacing)"
-            right="var(--carousel-spacing)"
-          >
+          <Box position="absolute" bottom="var(--carousel-spacing)" right="var(--carousel-spacing)">
             <Carousel.AutoplayTrigger asChild>
-              <IconButton
-                aria-label="Toggle autoplay"
-                size="sm"
-                variant="ghost"
-              >
+              <IconButton aria-label="Toggle autoplay" size="sm" variant="ghost">
                 <AutoplayIcon />
               </IconButton>
             </Carousel.AutoplayTrigger>
@@ -37,24 +29,22 @@ export const CarouselRoot = React.forwardRef<HTMLDivElement, CarouselRootProps>(
   },
 )
 
-export const CarouselControls = React.forwardRef<
-  HTMLDivElement,
-  Carousel.ControlProps
->(function CarouselControls(props, ref) {
-  return (
-    <Carousel.Control ref={ref} {...props}>
-      <Carousel.PrevTrigger aria-label="Previous" />
-      <Carousel.NextTrigger aria-label="Next" />
-    </Carousel.Control>
-  )
-})
+export const CarouselControls = React.forwardRef<HTMLDivElement, Carousel.ControlProps>(
+  function CarouselControls(props, ref) {
+    return (
+      <Carousel.Control ref={ref} {...props}>
+        <Carousel.PrevTrigger aria-label="Previous" />
+        <Carousel.NextTrigger aria-label="Next" />
+      </Carousel.Control>
+    )
+  },
+)
 
-export const CarouselIndicators = React.forwardRef<
-  HTMLDivElement,
-  Carousel.IndicatorGroupProps
->(function CarouselIndicators(props, ref) {
-  return <Carousel.IndicatorGroup ref={ref} {...props} />
-})
+export const CarouselIndicators = React.forwardRef<HTMLDivElement, Carousel.IndicatorGroupProps>(
+  function CarouselIndicators(props, ref) {
+    return <Carousel.IndicatorGroup ref={ref} {...props} />
+  },
+)
 
 export const CarouselItem = React.forwardRef<
   HTMLDivElement,
@@ -63,14 +53,7 @@ export const CarouselItem = React.forwardRef<
   return (
     <Carousel.Item {...rest} ref={ref}>
       {src ? (
-        <Image
-          src={src}
-          alt={alt}
-          w="full"
-          h="300px"
-          objectFit="cover"
-          borderRadius="md"
-        />
+        <Image src={src} alt={alt} w="full" h="300px" objectFit="cover" borderRadius="md" />
       ) : (
         children
       )}

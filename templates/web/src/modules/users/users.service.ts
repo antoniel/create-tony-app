@@ -1,9 +1,5 @@
 import type { Treaty } from '@elysia/eden'
-import {
-  type QueryClient,
-  mutationOptions,
-  queryOptions,
-} from '@tanstack/react-query'
+import { type QueryClient, mutationOptions, queryOptions } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import { edenMutationFn, edenQueryFn } from '../../lib/eden'
 
@@ -23,7 +19,6 @@ export const usersService = {
   createMutationOptions: (queryClient: QueryClient) =>
     mutationOptions<CreateUserResponse, CreateUserError, CreateUserRequest>({
       mutationFn: edenMutationFn(api.users.post),
-      onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: usersService.queryKey }),
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: usersService.queryKey }),
     }),
 }

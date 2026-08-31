@@ -1,4 +1,7 @@
-import { Separator as ChakraSeparator, type SeparatorProps as ChakraSeparatorProps } from '@chakra-ui/react'
+import {
+  Separator as ChakraSeparator,
+  type SeparatorProps as ChakraSeparatorProps,
+} from '@chakra-ui/react'
 import { forwardRef } from 'react'
 
 export interface SeparatorProps extends ChakraSeparatorProps {}

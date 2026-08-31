@@ -34,8 +34,8 @@ function RootComponent() {
   return (
     <Flex bgColor="app.bg" bgImage={chassisImage} h="100dvh" overflow="hidden" py="2" pr="2">
       <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
-      <Box as="main" bg="app.surface" borderRadius="2xl" flex="1" overflow="auto" shadow="sm">
-        <Container maxW="6xl" pb={{ base: '10', md: '16' }} pt="2" px="4" mx="4">
+      <Box as="main" bg="app.surface" borderRadius="2xl" flex="1" minW="0" overflow="auto" shadow="sm">
+        <Container maxW="6xl" mx="auto" pb={{ base: '10', md: '16' }} pt="2" px="4">
           <Outlet />
         </Container>
       </Box>

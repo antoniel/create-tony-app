@@ -2,19 +2,11 @@ import {
   FloatingPanel as ChakraFloatingPanel,
   IconButton,
   useFloatingPanelContext,
-} from "@chakra-ui/react"
-import * as React from "react"
-import {
-  LuGripHorizontal,
-  LuMaximize2,
-  LuMinus,
-  LuSquare,
-  LuX,
-} from "react-icons/lu"
+} from '@chakra-ui/react'
+import * as React from 'react'
+import { LuGripHorizontal, LuMaximize2, LuMinus, LuSquare, LuX } from 'react-icons/lu'
 
-type AnchorDetails = Parameters<
-  NonNullable<ChakraFloatingPanel.RootProps["getAnchorPosition"]>
->[0]
+type AnchorDetails = Parameters<NonNullable<ChakraFloatingPanel.RootProps['getAnchorPosition']>>[0]
 
 // Restores the pre-minimize size when the panel reopens after being closed
 // while minimized. persistRect keeps the shrunken height; this corrects it.
@@ -32,14 +24,10 @@ function SizeRestorer({
   return null
 }
 
-export const FloatingPanelRoot = function FloatingPanelRoot(
-  props: ChakraFloatingPanel.RootProps,
-) {
+export const FloatingPanelRoot = function FloatingPanelRoot(props: ChakraFloatingPanel.RootProps) {
   const anchorPos = React.useRef({ x: 0, y: 0 })
   const fullSize = React.useRef<{ width: number; height: number } | null>(null)
-  const restoreSize = React.useRef<{ width: number; height: number } | null>(
-    null,
-  )
+  const restoreSize = React.useRef<{ width: number; height: number } | null>(null)
   const isMinimized = React.useRef(false)
 
   const { onStageChange, onSizeChange, onOpenChange, ...rest } = props
@@ -56,7 +44,7 @@ export const FloatingPanelRoot = function FloatingPanelRoot(
       persistRect
       getAnchorPosition={getAnchorPosition}
       onStageChange={(details) => {
-        isMinimized.current = details.stage === "minimized"
+        isMinimized.current = details.stage === 'minimized'
         onStageChange?.(details)
       }}
       onSizeChange={(details) => {
@@ -77,70 +65,58 @@ export const FloatingPanelRoot = function FloatingPanelRoot(
   )
 }
 
-interface FloatingPanelContentProps extends Omit<
-  ChakraFloatingPanel.ContentProps,
-  "title"
-> {
+interface FloatingPanelContentProps extends Omit<ChakraFloatingPanel.ContentProps, 'title'> {
   title?: React.ReactNode
   showMinimize?: boolean
   showMaximize?: boolean
 }
 
-export const FloatingPanelContent = React.forwardRef<
-  HTMLDivElement,
-  FloatingPanelContentProps
->(function FloatingPanelContent(props, ref) {
-  const {
-    title,
-    showMinimize = true,
-    showMaximize = true,
-    children,
-    ...rest
-  } = props
+export const FloatingPanelContent = React.forwardRef<HTMLDivElement, FloatingPanelContentProps>(
+  function FloatingPanelContent(props, ref) {
+    const { title, showMinimize = true, showMaximize = true, children, ...rest } = props
 
-  return (
-    <ChakraFloatingPanel.Positioner>
-      <ChakraFloatingPanel.Content ref={ref} {...rest}>
-        <ChakraFloatingPanel.Header>
-          <ChakraFloatingPanel.DragTrigger>
-            <LuGripHorizontal />
-            {title && (
-              <ChakraFloatingPanel.Title>{title}</ChakraFloatingPanel.Title>
-            )}
-          </ChakraFloatingPanel.DragTrigger>
-          <ChakraFloatingPanel.Control>
-            <ChakraFloatingPanel.StageTrigger stage="default" asChild>
-              <IconButton variant="ghost" size="2xs" aria-label="Restore">
-                <LuMaximize2 />
-              </IconButton>
-            </ChakraFloatingPanel.StageTrigger>
-            {showMinimize && (
-              <ChakraFloatingPanel.StageTrigger stage="minimized" asChild>
-                <IconButton variant="ghost" size="2xs" aria-label="Minimize">
-                  <LuMinus />
+    return (
+      <ChakraFloatingPanel.Positioner>
+        <ChakraFloatingPanel.Content ref={ref} {...rest}>
+          <ChakraFloatingPanel.Header>
+            <ChakraFloatingPanel.DragTrigger>
+              <LuGripHorizontal />
+              {title && <ChakraFloatingPanel.Title>{title}</ChakraFloatingPanel.Title>}
+            </ChakraFloatingPanel.DragTrigger>
+            <ChakraFloatingPanel.Control>
+              <ChakraFloatingPanel.StageTrigger stage="default" asChild>
+                <IconButton variant="ghost" size="2xs" aria-label="Restore">
+                  <LuMaximize2 />
                 </IconButton>
               </ChakraFloatingPanel.StageTrigger>
-            )}
-            {showMaximize && (
-              <ChakraFloatingPanel.StageTrigger stage="maximized" asChild>
-                <IconButton variant="ghost" size="2xs" aria-label="Maximize">
-                  <LuSquare />
+              {showMinimize && (
+                <ChakraFloatingPanel.StageTrigger stage="minimized" asChild>
+                  <IconButton variant="ghost" size="2xs" aria-label="Minimize">
+                    <LuMinus />
+                  </IconButton>
+                </ChakraFloatingPanel.StageTrigger>
+              )}
+              {showMaximize && (
+                <ChakraFloatingPanel.StageTrigger stage="maximized" asChild>
+                  <IconButton variant="ghost" size="2xs" aria-label="Maximize">
+                    <LuSquare />
+                  </IconButton>
+                </ChakraFloatingPanel.StageTrigger>
+              )}
+              <ChakraFloatingPanel.CloseTrigger asChild>
+                <IconButton variant="ghost" size="2xs" aria-label="Close">
+                  <LuX />
                 </IconButton>
-              </ChakraFloatingPanel.StageTrigger>
-            )}
-            <ChakraFloatingPanel.CloseTrigger asChild>
-              <IconButton variant="ghost" size="2xs" aria-label="Close">
-                <LuX />
-              </IconButton>
-            </ChakraFloatingPanel.CloseTrigger>
-          </ChakraFloatingPanel.Control>
-        </ChakraFloatingPanel.Header>
-        <ChakraFloatingPanel.Body>{children}</ChakraFloatingPanel.Body>
-        <ChakraFloatingPanel.ResizeTriggers />
-      </ChakraFloatingPanel.Content>
-    </ChakraFloatingPanel.Positioner>
-  )
-})
+              </ChakraFloatingPanel.CloseTrigger>
+            </ChakraFloatingPanel.Control>
+          </ChakraFloatingPanel.Header>
+          <ChakraFloatingPanel.Body>{children}</ChakraFloatingPanel.Body>
+          <ChakraFloatingPanel.ResizeTriggers />
+        </ChakraFloatingPanel.Content>
+      </ChakraFloatingPanel.Positioner>
+    )
+  },
+)
 
 export const FloatingPanelTrigger = ChakraFloatingPanel.Trigger
 export const FloatingPanelBody = ChakraFloatingPanel.Body

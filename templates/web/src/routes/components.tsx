@@ -27,8 +27,11 @@ function ComponentsLayout() {
     <Stack gap="16">
       <PageIntro spec="01" title="components">
         <Text color="fg.muted">
-          one file in <Text as="span" fontFamily="mono">src/components/ui</Text>. the look lives
-          there.
+          one file in{' '}
+          <Text as="span" fontFamily="mono">
+            src/components/ui
+          </Text>
+          . the look lives there.
         </Text>
       </PageIntro>
       <Grid gap="0" templateColumns="repeat(auto-fill, minmax(16rem, 1fr))">
