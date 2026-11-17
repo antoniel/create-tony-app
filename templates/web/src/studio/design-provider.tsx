@@ -13,7 +13,10 @@ export function DesignProvider({ children }: PropsWithChildren) {
   const theme = useMemo(
     () =>
       buildSystem(
-        draftFromSeed(seed, { accent, fonts: { heading: fontStack(font), body: fontStack(font), mono: "monospace" } }),
+        draftFromSeed(seed, {
+          accent,
+          fonts: { heading: fontStack(font), body: fontStack(font), mono: "monospace" },
+        }),
       ),
     [seed, accent, font],
   );

@@ -9,7 +9,12 @@ export default defineConfig({
         ? "production.spec.ts"
         : "picker.spec.ts",
   fullyParallel: true,
-  use: { baseURL: "http://127.0.0.1:4179" },
+  timeout: process.env.CI ? 90_000 : 30_000,
+  use: {
+    baseURL: "http://127.0.0.1:4179",
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+  },
   projects: [
     {
       name: "chromium",

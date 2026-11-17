@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (error) => errors.get(page)!.push(error.message));
   await page.route("https://**/*", (route) => route.abort());
   await page.goto(`${origin}/studio`, { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("status")).toContainText("Saved locally");
+  await expect(page.locator(".studio-save")).toContainText("Saved locally");
   await expect(page.locator("[data-render-mode]")).not.toHaveText("Starting");
 });
 test.afterEach(async ({ page }) => {
@@ -68,13 +68,11 @@ test("edits global tokens, undo/redo, persists across reload and exports validat
   const tokens = await tokenDownload;
   expect(await fs.readFile((await tokens.path())!, "utf8")).toContain('draftFromSeed("#235588"');
   const imported = { ...backup, seed: "#334466" };
-  await page
-    .getByLabel("Import design backup")
-    .setInputFiles({
-      name: "valid.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(imported)),
-    });
+  await page.getByLabel("Import design backup").setInputFiles({
+    name: "valid.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(imported)),
+  });
   await expect(seed).toHaveValue("#334466");
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   await expect(seed).toHaveValue("#235588");
@@ -83,7 +81,7 @@ test("edits global tokens, undo/redo, persists across reload and exports validat
     mimeType: "application/json",
     buffer: Buffer.from('{"version":99}'),
   });
-  await expect(page.getByRole("status")).toContainText("Invalid backup");
+  await expect(page.locator(".studio-save")).toContainText("Invalid backup");
   await expect(seed).toHaveValue("#235588");
 });
 
@@ -209,11 +207,76 @@ test("storage failures are visible without breaking edits or undo", async ({ pag
     };
   });
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("status")).toContainText("Local storage unavailable");
+  await expect(page.locator(".studio-save")).toContainText("Local storage unavailable");
   const seed = page.getByRole("textbox", { name: "Brand seed", exact: true });
   await seed.fill("#112233");
   await seed.press("Enter");
   await expect(seed).toHaveValue("#112233");
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   await expect(seed).toHaveValue("#434343");
+});
+
+test("drawer opens directly from an unselected card and keeps selection unchanged", async ({
+  page,
+}) => {
+  await page
+    .getByRole("complementary", { name: "Layers" })
+    .getByRole("button", { name: "drawer", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Show all", exact: true }).click();
+  const drawer = page.locator('[data-node="drawer"]');
+  await expect(drawer).toHaveAttribute("data-selected", "false");
+  await drawer.getByRole("button", { name: "open", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "drawer", exact: true })).toBeVisible();
+  await expect(drawer).toHaveAttribute("data-selected", "false");
+  await page
+    .getByRole("dialog", { name: "drawer", exact: true })
+    .getByRole("button", { name: "Close", exact: true })
+    .click();
+  await expect(page.getByRole("dialog", { name: "drawer", exact: true })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Select", exact: true })).toHaveCount(0);
+});
+
+test("layers have collapsible functional clusters and search reveals their members", async ({
+  page,
+}) => {
+  const layers = page.getByRole("complementary", { name: "Layers" });
+  const actions = layers
+    .locator(".studio-layer-cluster")
+    .filter({ has: page.locator("summary", { hasText: /^Actions/ }) })
+    .first();
+  await expect(actions.getByRole("button", { name: "button", exact: true })).toBeVisible();
+  await actions.locator("summary").click();
+  await expect(actions.getByRole("button", { name: "button", exact: true })).toBeHidden();
+  await page.getByRole("searchbox", { name: "Search layers" }).fill("button");
+  await expect(layers.getByRole("button", { name: "button", exact: true })).toBeVisible();
+  await expect(page.locator('[data-cluster="Atoms-Actions"]')).toHaveCount(1);
+});
+
+test("cards grow with their content and page nodes show real structure and navigation", async ({
+  page,
+}) => {
+  const sizes = await page.locator("[data-node]").evaluateAll((cards) =>
+    cards.map((card) => {
+      const preview = card.querySelector<HTMLElement>(".studio-node-preview")!;
+      return {
+        id: card.getAttribute("data-node"),
+        height: (card as HTMLElement).offsetHeight,
+        clipped:
+          preview.scrollHeight > preview.clientHeight + 1 ||
+          preview.scrollWidth > preview.clientWidth + 1,
+      };
+    }),
+  );
+  expect(new Set(sizes.map((size) => size.height)).size).toBeGreaterThan(5);
+  expect(sizes.filter((size) => size.clipped)).toEqual([]);
+  await page
+    .getByRole("complementary", { name: "Layers" })
+    .getByRole("button", { name: "Component gallery", exact: true })
+    .click();
+  const gallery = page.locator('[data-node="component-gallery"]');
+  await expect(gallery.getByRole("heading", { name: "Components", exact: true })).toBeVisible();
+  await expect(gallery.locator(".studio-mini-grid section")).toHaveCount(4);
+  await gallery.getByRole("link", { name: "Open the complete page · 67 components ↗" }).click();
+  await expect(page).toHaveURL(/\/components$/);
 });

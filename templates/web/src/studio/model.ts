@@ -33,12 +33,11 @@ export const initialDocument: StudioDocument = {
   version: 1,
   seed: projectDraft.seed,
   accent: projectDraft.accent,
-  font:
-    projectDraft.fonts.body.startsWith("Georgia")
-      ? "Georgia"
-      : projectDraft.fonts.body.includes("monospace")
-        ? "monospace"
-        : "Inter",
+  font: projectDraft.fonts.body.startsWith("Georgia")
+    ? "Georgia"
+    : projectDraft.fonts.body.includes("monospace")
+      ? "monospace"
+      : "Inter",
   appearance: {},
   positions: {},
   hidden: [],

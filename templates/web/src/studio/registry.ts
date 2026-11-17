@@ -1,7 +1,11 @@
 import { componentIndexes, type ComponentIndex } from "../lib/pages";
-import { cardHeight, levels, type Level, type Point } from "./model";
+import { type Level, type Point } from "./model";
+
+import { clusterOf } from "./clusters";
+import { arrange } from "./layout";
 
 export interface DesignNode {
+  cluster: string;
   id: string;
   label: string;
   level: Level;
@@ -64,6 +68,7 @@ export const nodes: DesignNode[] = [
     id: "tokens",
     label: "Design tokens",
     level: "Foundations",
+    cluster: "Tokens",
     dependencies: [],
     source: "src/theme/draft.ts",
   },
@@ -71,6 +76,7 @@ export const nodes: DesignNode[] = [
     id,
     label: id.replaceAll("-", " "),
     component: id,
+    cluster: clusterOf(id),
     level: organisms.includes(id) ? "Organisms" : molecules.includes(id) ? "Molecules" : "Atoms",
     dependencies: sourceDependencies(String(sources[`../components/ui/${id}.tsx`] ?? "")),
     source: `src/components/ui/${id}.tsx`,
@@ -79,6 +85,7 @@ export const nodes: DesignNode[] = [
     id: "component-detail",
     label: "Component detail",
     level: "Templates",
+    cluster: "Page structures",
     dependencies: ["code"],
     source: "src/routes/components/$index.tsx",
   },
@@ -86,23 +93,12 @@ export const nodes: DesignNode[] = [
     id: "component-gallery",
     label: "Component gallery",
     level: "Pages",
+    cluster: "Screens",
     dependencies: [...componentIndexes],
-    source: "src/routes/components/-catalog.tsx",
+    source: "src/routes/components.tsx",
   },
 ];
-export const layout = Object.fromEntries(
-  nodes.map((node) => {
-    const siblings = nodes.filter((other) => other.level === node.level);
-    const index = siblings.indexOf(node);
-    return [
-      node.id,
-      {
-        x: levels.indexOf(node.level) * 780 + (index % 2) * 350,
-        y: 100 + Math.floor(index / 2) * (cardHeight + 45),
-      } satisfies Point,
-    ];
-  }),
-);
+export const layout = arrange(nodes, {}).positions;
 export function positionOf(node: DesignNode, positions: Record<string, Point>): Point {
   return positions[node.id] ?? layout[node.id];
 }

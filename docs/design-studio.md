@@ -9,9 +9,9 @@ Open **plate → studio** in the sidebar. The board contains 67 real component p
 Connections run from dependency to consumer. Local component connections come from relative imports in the actual TSX files, read by Vite at build time. The gallery consumes the catalog, and the detail template imports Code. SDK and Chakra internals are not expanded. Tokens are inherited through the theme provider, not represented as imaginary direct imports from every component.
 
 - Drag empty space or scroll to pan. Ctrl/Command + scroll zooms around the pointer; the UI SDK also handles touch pinch. Keyboard focus on the board supports arrows, +, − and 0. The toolbar offers Fit all and zoom controls.
-- Select a layer to center it and highlight its connections. Search and collapse the layer groups, or hide individual nodes.
-- Drag a card header to move it; focused headers support arrow keys, with Shift for larger steps. Movement participates in undo/redo.
-- Isolate a component to work on it. Select mode makes previews inert so their controls cannot steal input. Interact mode activates the selected preview. Escape exits isolation and interaction.
+- Select a layer to center it and highlight its connections. Each atomic level contains collapsible functional clusters (Content, Actions, Inputs, Selection, Feedback, Navigation, Layout, Overlays). The canvas uses the same clusters, with labeled group boundaries. Search expands matching groups; individual nodes can be hidden.
+- Cards size themselves to their content; a ResizeObserver feeds their real dimensions into layout, fit/reveal and connection endpoints. Drag a card header to move/select it; focused headers support arrow keys, with Shift for larger steps. Movement participates in undo/redo. Auto layout clears custom positions (undoable) and returns to the clustered arrangement.
+- Previews are interactive immediately, even when the card is not selected. Open drawers/dialogs or edit inputs directly. Only headers and the Layers panel select cards; preview clicks do not. Isolate limits the board to one component; Escape exits isolation when the component has not handled the key itself.
 - Edit brand seed, accent and font globally; the changes apply throughout the app. Edit radius, padding, background and text color for a component. Text fields commit on blur/Enter so history records edits rather than every keystroke. These are visual overrides, not arbitrary JSX editing.
 - Undo/redo uses buttons or Command/Ctrl+Z / Shift+Command/Ctrl+Z outside text inputs. Reset is undoable. History retains up to 50 snapshots for the current session.
 
@@ -34,6 +34,8 @@ Component overrides use Chakra component classes and `data-design-component` bou
 WebGPU draws the dot grid and curved dependency connections. Components remain live DOM, retaining focus, accessibility, text rendering and their existing behaviors. This is a hybrid renderer; it does not rasterize HTML or JSX to GPU textures. Geometry buffers are reused across camera changes and recomputed when nodes/connections change. Frames render on demand, not in an idle animation loop. Resize, unmount and device loss release resources. Missing WebGPU, adapter/pipeline failures or device loss switch to Canvas 2D.
 
 WebGPU requires a supporting browser and a secure context (HTTPS or localhost). No backend, API key, database migration or deployment service is introduced. `@webgpu/types` is a development-only type dependency. No physical-device performance claim is made from headless browser tests.
+
+Template cards show the reusable page regions and a filled-example link. The gallery Page card shows a miniature layout with four real interactive component previews and links into the actual full routes. It is an illustrative composition, not an iframe or a complete miniature of all 67 gallery entries.
 
 The SDK supports web framework adapters, not React Native or automatic native iOS/Android widgets. Desktop/mobile reuse would be through a web shell/WebView with browser-specific GPU support. Native shells, native rendering and mobile interaction tuning remain separate work. The initial workspace is optimized for desktop editing.
 
@@ -64,3 +66,7 @@ This opts the test browser into WebGPU; it does not change the application or re
 Future work: migrate remaining kit behaviors to UI SDK where the integration is useful, semantic per-component prop editors, creating compositions/JSX by dragging, custom node creation, collaborative persistence and native shells. None of these is presented as part of this version.
 
 Local verification completed: 27 studio browser cases passed against a freshly generated production app across Chromium, Firefox and WebKit; the WebGPU readback/device-loss test passed in Chromium; three model/history tests and all seven generator packaging cases passed; all four generated web feature combinations typechecked and production-built; the existing 15 picker browser cases and strict type fixtures still passed. The CLI build, focused studio lint and npm package dry-run also passed. CI repeats the platform-independent suites; the explicit GPU test remains opt-in because runner GPU support varies.
+
+Follow-up: functional clustering, immediate preview interaction and intrinsic card sizes have dedicated browser regressions. CI preserves traces/screenshots on failure and allows 90 seconds per test on shared runners (local timeout remains 30 seconds); the original WebKit token/export flow exhausted its total 30-second test budget in CI while waiting to click Redo.
+
+The follow-up passed 36 browser cases on a freshly generated production build in Chromium, Firefox and WebKit, five model/layout tests and the WebGPU texture/device-loss regression. Tests cover immediate drawer interaction without selection, cluster collapse/search, content-sized cards without clipped previews and navigation from the gallery composition.

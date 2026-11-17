@@ -53,3 +53,31 @@ test("changing one property does not replace unrelated component styles", () => 
   expect(css).not.toContain("background:");
   expect(css).not.toContain("padding:");
 });
+
+import { componentIndexes } from "../templates/web/src/lib/pages";
+import { componentClusters } from "../templates/web/src/studio/clusters";
+import { arrange, sizeOf } from "../templates/web/src/studio/layout";
+
+test("functional clusters cover each catalog component exactly once", () => {
+  const members = Object.values(componentClusters).flat();
+  expect(new Set(members).size).toBe(members.length);
+  expect([...members].sort()).toEqual([...componentIndexes].sort());
+});
+
+test("cluster layout accounts for real widths and row heights without overlapping", () => {
+  const nodes = [
+    { id: "short", level: "Atoms", cluster: "Inputs" },
+    { id: "tall", level: "Atoms", cluster: "Inputs" },
+    { id: "next-row", level: "Atoms", cluster: "Inputs" },
+    { id: "next-group", level: "Atoms", cluster: "Feedback" },
+    { id: "next-level", level: "Molecules", cluster: "Inputs" },
+  ] as const;
+  const sizes = { short: { width: 700, height: 80 }, tall: { width: 320, height: 650 } };
+  const result = arrange([...nodes], sizes);
+  expect(result.positions.tall.x).toBeGreaterThan(result.positions.short.x + 700);
+  expect(result.positions["next-row"].y).toBeGreaterThan(result.positions.tall.y + 650);
+  expect(result.positions["next-group"].y).toBeGreaterThan(
+    result.positions["next-row"].y + sizeOf("next-row", sizes).height,
+  );
+  expect(result.positions["next-level"].x).toBeGreaterThan(result.positions.tall.x + 320);
+});

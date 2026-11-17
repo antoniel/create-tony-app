@@ -1,11 +1,14 @@
 import type { Viewport } from "@ui-sdk/core";
-import { cardHeight, cardWidth, type Point } from "./model";
+import { type Point } from "./model";
 import { nodes, positionOf } from "./registry";
+
+import { sizeOf, type NodeSize } from "./layout";
 
 export type RenderMode = "Starting" | "WebGPU" | "Canvas 2D";
 export interface Scene {
   viewport: Viewport;
   positions: Record<string, Point>;
+  sizes?: Record<string, NodeSize>;
   hidden: string[];
   selected: string | null;
 }
@@ -19,8 +22,10 @@ export function connectionPoints(scene: Scene) {
       if (!source) continue;
       const a = positionOf(source, scene.positions),
         b = positionOf(target, scene.positions);
-      const start = { x: a.x + cardWidth, y: a.y + cardHeight / 2 },
-        end = { x: b.x, y: b.y + cardHeight / 2 };
+      const sourceSize = sizeOf(source.id, scene.sizes ?? {}),
+        targetSize = sizeOf(target.id, scene.sizes ?? {});
+      const start = { x: a.x + sourceSize.width, y: a.y + sourceSize.height / 2 },
+        end = { x: b.x, y: b.y + targetSize.height / 2 };
       const bend = Math.max(100, Math.abs(end.x - start.x) * 0.5);
       const curve = (t: number) => {
         const u = 1 - t;
@@ -81,6 +86,7 @@ export function createSceneRenderer(host: HTMLElement, onMode: (mode: RenderMode
     if (
       !cachedScene ||
       cachedScene.positions !== current.positions ||
+      cachedScene.sizes !== current.sizes ||
       cachedScene.hidden !== current.hidden ||
       cachedScene.selected !== current.selected
     ) {

@@ -36,25 +36,24 @@ function ComponentsLayout() {
       </PageIntro>
       <Grid gap="0" templateColumns="repeat(auto-fill, minmax(16rem, 1fr))">
         {componentPages.map((page) => (
-          <Link key={page.index} params={componentTo(page.index).params} to="/components/$index">
-            <Stack
-              borderColor="app.border"
-              borderWidth="1px"
-              gap="4"
-              h="full"
-              p="4"
-              shadow="xs"
-              _hover={{ bg: 'app.spot' }}
-            >
-              <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide">
-                {page.spec}
-              </Text>
-              <BoxPreview>{catalogPreview(page.index)}</BoxPreview>
-              <Text fontSize="sm" letterSpacing="tight">
-                {page.label}
-              </Text>
-            </Stack>
-          </Link>
+          <Stack
+            key={page.index}
+            borderColor="app.border"
+            borderWidth="1px"
+            gap="4"
+            h="full"
+            p="4"
+            shadow="xs"
+            _hover={{ bg: 'app.spot' }}
+          >
+            <Text color="fg.muted" fontFamily="mono" fontSize="2xs" letterSpacing="wide">
+              {page.spec}
+            </Text>
+            <BoxPreview>{catalogPreview(page.index)}</BoxPreview>
+            <Link params={componentTo(page.index).params} to="/components/$index">
+              <Text fontSize="sm" letterSpacing="tight">{page.label} ↗</Text>
+            </Link>
+          </Stack>
         ))}
       </Grid>
     </Stack>
@@ -72,6 +71,7 @@ function BoxPreview({ children }: { children: ReactNode }) {
       justify="center"
       overflow="hidden"
       pointerEvents="none"
+      inert
       px="4"
     >
       {children}

@@ -2,16 +2,14 @@
 
 import { Button } from "@ui-sdk/react/button";
 import { Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { Code } from "../components/ui/code";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { GalleryPagePreview, TemplatePreview } from "./page-previews";
 import { catalogPreview } from "../routes/components/-catalog";
 import { brandSteps, draftFromSeed } from "../theme/draft";
 import { useDesign } from "./design-provider";
 import {
   appearanceCSS,
   fontStack,
-  cardHeight,
-  cardWidth,
   initialAppearance,
   initialDocument,
   isHex,
@@ -19,6 +17,7 @@ import {
   parseDocument,
   type Appearance,
 } from "./model";
+import { arrange, sizeOf, type NodeSize } from "./layout";
 import { nodes, positionOf, type DesignNode } from "./registry";
 import { createSceneRenderer, type RenderMode } from "./renderer";
 import { studioViewport, type StudioViewport } from "./viewport";
@@ -113,21 +112,8 @@ function NodeContent({ node }: { node: DesignNode }) {
       </div>
     );
   }
-  if (node.id === "component-detail")
-    return (
-      <div className="studio-page-preview">
-        <strong>Component detail</strong>
-        <p>Title, source and an isolated interactive preview.</p>
-        <Code>src/components/ui</Code>
-      </div>
-    );
-  return (
-    <div className="studio-page-preview">
-      <strong>Your component library</strong>
-      <p>{nodes.length - 3} components sharing one design language.</p>
-      <Link to="/components">Open gallery ↗</Link>
-    </div>
-  );
+  if (node.id === "component-detail") return <TemplatePreview />;
+  return <GalleryPagePreview />;
 }
 
 export function DesignStudio() {
@@ -137,7 +123,12 @@ export function DesignStudio() {
   const [measured, setMeasured] = useState(initialAppearance);
   const [query, setQuery] = useState("");
   const [isolated, setIsolated] = useState(false);
-  const [interact, setInteract] = useState(false);
+  const [sizes, setSizes] = useState<Record<string, NodeSize>>({});
+  const arrangement = useMemo(() => arrange(nodes, sizes), [sizes]);
+  const positions = useMemo(
+    () => ({ ...arrangement.positions, ...document.positions }),
+    [arrangement, document.positions],
+  );
   const [mode, setMode] = useState<RenderMode>("Starting");
   const [zoom, setZoom] = useState(55);
   const [exportsOpen, setExportsOpen] = useState(false);
@@ -146,13 +137,40 @@ export function DesignStudio() {
     sceneHost = useRef<HTMLDivElement>(null);
   const viewport = useRef<StudioViewport | null>(null);
   const renderer = useRef<ReturnType<typeof createSceneRenderer> | null>(null);
-  const scene = useRef({ positions: document.positions, hidden: document.hidden, selected });
+  const scene = useRef({ positions, sizes, hidden: document.hidden, selected });
   const dragCleanup = useRef<(() => void) | null>(null);
   const picked = nodes.find((node) => node.id === selected);
-  const filtered = nodes.filter((node) => node.label.toLowerCase().includes(query.toLowerCase()));
+  const filtered = nodes.filter((node) =>
+    (node.label + " " + node.cluster).toLowerCase().includes(query.toLowerCase()),
+  );
   const visible = nodes.filter(
     (node) => !document.hidden.includes(node.id) && (!isolated || node.id === selected),
   );
+  const visibleKey = visible.map((node) => node.id).join(",");
+  useEffect(() => {
+    const container = world.current;
+    if (!container) return;
+    const observer = new ResizeObserver((entries) => {
+      setSizes((current) => {
+        const next = { ...current };
+        let changed = false;
+        for (const entry of entries) {
+          const element = entry.target;
+          if (!(element instanceof HTMLElement) || !element.dataset.node) continue;
+          const id = element.dataset.node;
+          const width = element.offsetWidth,
+            height = element.offsetHeight;
+          if (!width || !height || (current[id]?.width === width && current[id]?.height === height))
+            continue;
+          next[id] = { width, height };
+          changed = true;
+        }
+        return changed ? next : current;
+      });
+    });
+    container.querySelectorAll("[data-node]").forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [visibleKey]);
   const draw = useCallback(() => {
     const instance = viewport.current;
     if (!instance || !world.current) return;
@@ -200,16 +218,18 @@ export function DesignStudio() {
   }, [draw]);
   useEffect(() => {
     scene.current = {
-      positions: document.positions,
+      positions,
+      sizes,
       hidden: isolated
         ? nodes.filter((node) => node.id !== selected).map((node) => node.id)
         : document.hidden,
       selected,
     };
     draw();
-  }, [document.positions, document.hidden, isolated, selected, draw]);
+  }, [positions, sizes, document.hidden, isolated, selected, draw]);
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
       if (
         event.target instanceof Element &&
         event.target.closest("input,textarea,select,[contenteditable]")
@@ -222,7 +242,6 @@ export function DesignStudio() {
       }
       if (event.key === "Escape") {
         setIsolated(false);
-        setInteract(false);
       }
     };
     window.addEventListener("keydown", listener);
@@ -258,21 +277,30 @@ export function DesignStudio() {
     setSelected(node.id);
     if (document.hidden.includes(node.id))
       update((doc) => ({ ...doc, hidden: doc.hidden.filter((id) => id !== node.id) }));
-    const p = positionOf(node, document.positions);
+    const p = positionOf(node, positions),
+      size = sizeOf(node.id, sizes);
     viewport.current?.api.viewport.fit(
-      { left: p.x - 60, top: p.y - 50, right: p.x + cardWidth + 60, bottom: p.y + cardHeight + 50 },
+      {
+        left: p.x - 60,
+        top: p.y - 50,
+        right: p.x + size.width + 60,
+        bottom: p.y + size.height + 50,
+      },
       { maxZoom: 1, padding: 40 },
     );
   }
   function fit() {
-    const positions = visible.map((node) => positionOf(node, document.positions));
-    if (!positions.length) return;
+    const boxes = visible.map((node) => ({
+      ...positionOf(node, positions),
+      ...sizeOf(node.id, sizes),
+    }));
+    if (!boxes.length) return;
     viewport.current?.api.viewport.fit(
       {
-        left: Math.min(...positions.map((p) => p.x)) - 30,
+        left: Math.min(...boxes.map((p) => p.x)) - 30,
         top: 0,
-        right: Math.max(...positions.map((p) => p.x)) + cardWidth + 30,
-        bottom: Math.max(...positions.map((p) => p.y)) + cardHeight + 30,
+        right: Math.max(...boxes.map((p) => p.x + p.width)) + 30,
+        bottom: Math.max(...boxes.map((p) => p.y + p.height)) + 30,
       },
       { padding: 32 },
     );
@@ -286,7 +314,7 @@ export function DesignStudio() {
       card = button.closest<HTMLElement>("[data-node]");
     if (!card) return;
     const start = view.toCanvas(event.clientX, event.clientY),
-      original = positionOf(node, document.positions);
+      original = positionOf(node, positions);
     let next = original;
     const move = (pointer: PointerEvent) => {
       const current = view.toCanvas(pointer.clientX, pointer.clientY);
@@ -317,7 +345,7 @@ export function DesignStudio() {
       cleanup();
       card.style.left = `${original.x}px`;
       card.style.top = `${original.y}px`;
-      scene.current = { ...scene.current, positions: document.positions };
+      scene.current = { ...scene.current, positions };
       draw();
     };
     dragCleanup.current?.();
@@ -444,37 +472,59 @@ export function DesignStudio() {
           />
           <div className="studio-layer-list">
             {levels.map((level) => (
-              <details key={level} open>
+              <details key={`${level}:${Boolean(query)}`} open>
                 <summary>
                   {level}
                   <span>{filtered.filter((node) => node.level === level).length}</span>
                 </summary>
-                {filtered
-                  .filter((node) => node.level === level)
-                  .map((node) => (
-                    <div
-                      key={node.id}
-                      className="studio-layer"
-                      data-selected={selected === node.id}
-                    >
-                      <Button aria-pressed={selected === node.id} onClick={() => focus(node)}>
-                        <span aria-hidden>◇</span> {node.label}
-                      </Button>
-                      <Button
-                        aria-label={`${document.hidden.includes(node.id) ? "Show" : "Hide"} ${node.label}`}
-                        onClick={() =>
-                          update((doc) => ({
-                            ...doc,
-                            hidden: doc.hidden.includes(node.id)
-                              ? doc.hidden.filter((id) => id !== node.id)
-                              : [...doc.hidden, node.id],
-                          }))
+                {[
+                  ...new Set(
+                    filtered.filter((node) => node.level === level).map((node) => node.cluster),
+                  ),
+                ].map((cluster) => (
+                  <details
+                    className="studio-layer-cluster"
+                    key={`${cluster}:${Boolean(query)}`}
+                    open
+                  >
+                    <summary>
+                      {cluster}
+                      <span>
+                        {
+                          filtered.filter(
+                            (node) => node.level === level && node.cluster === cluster,
+                          ).length
                         }
-                      >
-                        {document.hidden.includes(node.id) ? "○" : "●"}
-                      </Button>
-                    </div>
-                  ))}
+                      </span>
+                    </summary>
+                    {filtered
+                      .filter((node) => node.level === level && node.cluster === cluster)
+                      .map((node) => (
+                        <div
+                          key={node.id}
+                          className="studio-layer"
+                          data-selected={selected === node.id}
+                        >
+                          <Button aria-pressed={selected === node.id} onClick={() => focus(node)}>
+                            <span aria-hidden>◇</span> {node.label}
+                          </Button>
+                          <Button
+                            aria-label={`${document.hidden.includes(node.id) ? "Show" : "Hide"} ${node.label}`}
+                            onClick={() =>
+                              update((doc) => ({
+                                ...doc,
+                                hidden: doc.hidden.includes(node.id)
+                                  ? doc.hidden.filter((id) => id !== node.id)
+                                  : [...doc.hidden, node.id],
+                              }))
+                            }
+                          >
+                            {document.hidden.includes(node.id) ? "○" : "●"}
+                          </Button>
+                        </div>
+                      ))}
+                  </details>
+                ))}
               </details>
             ))}
           </div>
@@ -491,6 +541,13 @@ export function DesignStudio() {
             tabIndex={0}
             role="region"
             aria-label="Infinite design canvas"
+            onFocusCapture={(event) => {
+              const card = event.target.closest("[data-node]");
+              if (card && event.target.matches(":focus-visible")) {
+                const api = viewport.current?.api.viewport;
+                if (api) api.reveal(api.rectOf(card), { padding: 24 });
+              }
+            }}
             onPointerDown={(event) => {
               if (event.target === event.currentTarget) {
                 event.currentTarget.focus();
@@ -512,7 +569,11 @@ export function DesignStudio() {
             <div className="studio-scene" ref={sceneHost} />
             <div className="studio-world" ref={world}>
               {levels.map((level, i) => (
-                <div className="studio-column" key={level} style={{ left: i * 780, top: 20 }}>
+                <div
+                  className="studio-column"
+                  key={level}
+                  style={{ left: arrangement.columns[level], top: 20 }}
+                >
                   <span>0{i + 1}</span>
                   <h2>{level}</h2>
                   <p>
@@ -524,8 +585,21 @@ export function DesignStudio() {
                   </p>
                 </div>
               ))}
+              {arrangement.bands
+                .filter((band) => visible.some((node) => band.members.includes(node.id)))
+                .map((band) => (
+                  <div
+                    key={band.id}
+                    className="studio-cluster-band"
+                    data-cluster={band.id}
+                    style={{ left: band.x, top: band.y, width: band.width, height: band.height }}
+                    aria-hidden="true"
+                  >
+                    <span>{band.label}</span>
+                  </div>
+                ))}
               {visible.map((node) => {
-                const p = positionOf(node, document.positions);
+                const p = positionOf(node, positions);
                 return (
                   <article
                     className="studio-node"
@@ -536,8 +610,6 @@ export function DesignStudio() {
                       {
                         left: p.x,
                         top: p.y,
-                        width: cardWidth,
-                        height: cardHeight,
                       } satisfies CSSProperties
                     }
                   >
@@ -578,17 +650,8 @@ export function DesignStudio() {
                       {node.label}
                       <small>{node.level.slice(0, -1)}</small>
                     </button>
-                    <div
-                      className="studio-node-preview"
-                      data-interactive={interact && selected === node.id}
-                      onPointerDown={() => {
-                        if (!interact) setSelected(node.id);
-                      }}
-                    >
-                      <div
-                        className="studio-node-content"
-                        inert={!(interact && selected === node.id)}
-                      >
+                    <div className="studio-node-preview" data-interactive="true">
+                      <div className="studio-node-content">
                         <NodeContent node={node} />
                       </div>
                     </div>
@@ -598,7 +661,6 @@ export function DesignStudio() {
                         onClick={() => {
                           focus(node);
                           setIsolated(true);
-                          setInteract(true);
                         }}
                       >
                         Isolate ↗
@@ -632,8 +694,8 @@ export function DesignStudio() {
             >
               Show all
             </Button>
-            <Button aria-pressed={interact} onClick={() => setInteract(!interact)}>
-              {interact ? "Interact" : "Select"}
+            <Button onClick={() => update((doc) => ({ ...doc, positions: {} }))}>
+              Auto layout
             </Button>
           </div>
           <div className="studio-board-status">

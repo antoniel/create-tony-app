@@ -25,3 +25,8 @@ jobs:
       - run: npm run typecheck && npm run build && npm test
         working-directory: tests/ui-sdk
       - run: node tests/verify-studio.cjs
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure-evidence
+          path: tests/ui-sdk/test-results/
