@@ -16,8 +16,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 22.x
           cache: yarn
       - run: yarn install --frozen-lockfile
+      # np (release tooling) requires Node 22 to install. Exercise the CLI on
+      # each supported CI runtime after installing those development tools.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
       - run: yarn build
       - run: npm pack --dry-run

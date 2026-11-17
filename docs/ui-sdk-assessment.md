@@ -60,7 +60,7 @@ npm test
 SDK_APP_URL=http://127.0.0.1:3000 npm test
 ```
 
-CI includes the generator/build matrix and the cross-browser harness. Production gallery smoke testing was performed locally. Native screen readers, touch devices, IME, large/remote datasets and every SDK component were not evaluated; production deployment itself was not performed.
+CI includes the generator/build matrix and the cross-browser harness. The first Node 20 CI run exposed a pre-existing install failure: release tool np@12 requires Node 22. CI now installs development tools on Node 22 before compiling/packing on each Node 20/22 matrix runtime. Production gallery smoke testing was performed locally. Native screen readers, touch devices, IME, large/remote datasets and every SDK component were not evaluated; production deployment itself was not performed.
 
 ## Recommendation
 
