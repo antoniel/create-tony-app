@@ -49,3 +49,5 @@ Web UI is a Chakra kit in `apps/web/src/components/ui` — one file per componen
 Web projects include [Code Inspector](https://inspector.fe-dev.cn/en/) in Vite. In `bun dev`, hold Option+Shift (Mac) or Alt+Shift (Windows) and click a DOM node to open the source file in the editor.
 
 Web projects also include nuqs for type-safe URL state. Its TanStack Router adapter is mounted in the shared provider.
+
+Generated web projects include a visual design-system editor at `/studio`: an infinite canvas with UI SDK pan/zoom, WebGPU connections (with a Canvas 2D fallback), atomic-design layers, real component previews, token/style editing, undo/redo and local persistence. Export theme tokens and component CSS to customize the next project. See [Design Studio](docs/design-studio.md).

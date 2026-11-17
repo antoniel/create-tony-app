@@ -886,11 +886,11 @@ const catalog = {
 } satisfies Record<ComponentIndex, { copy: string; preview: ReactNode }>
 
 export function catalogEntry(index: ComponentIndex) {
-  return catalog[index]
+  return { ...catalog[index], preview: <div data-design-component={index}>{catalog[index].preview}</div> }
 }
 
 export function catalogPreview(index: ComponentIndex) {
-  return catalog[index].preview
+  return <div data-design-component={index}>{catalog[index].preview}</div>
 }
 
 function SdkComboboxPreview() {

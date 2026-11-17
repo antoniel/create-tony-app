@@ -1,5 +1,7 @@
 # UI SDK assessment and proof of concept
 
+Historical combobox-only evaluation. The subsequent [Design Studio](design-studio.md) implements the newly requested canvas use case, where UI SDK viewport behavior has a concrete role. The findings below describe the original experiment, not the later editor.
+
 Assessed 2026-11-17. Recommendation: keep experimental; do not adopt as the default kit yet.
 
 ## What it solves

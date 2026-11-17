@@ -40,7 +40,7 @@ const themeModes = [
 
 type NavItem = {
   href: string
-  to: '/' | '/components' | '/components/$index'
+  to: '/' | '/studio' | '/components' | '/components/$index'
   params?: { index: ComponentIndex }
   label: string
   spec: string
@@ -52,7 +52,7 @@ const nav: { label: string; icon: PhosphorIcon; items: NavItem[] }[] = [
   {
     label: 'plate',
     icon: StackSimple,
-    items: [{ href: '/', to: '/' as const, label: 'system', exact: true as const, spec: '01', icon: Swatches }],
+    items: [{ href: '/studio', to: '/studio', label: 'studio', exact: true, spec: '00', icon: SquaresFour }, { href: '/', to: '/' as const, label: 'system', exact: true as const, spec: '01', icon: Swatches }],
   },
   {
     label: 'components',

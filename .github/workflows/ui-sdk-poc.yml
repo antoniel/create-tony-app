@@ -1,4 +1,4 @@
-name: UI SDK proof of concept
+name: Design studio and UI SDK
 on:
   pull_request:
   workflow_dispatch:
@@ -16,6 +16,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: node --test tests/generator-sdk.cjs
+      - run: bun test tests/studio-model.test.ts
       - run: node tests/verify-sdk-generated.cjs
       - run: npm ci
         working-directory: tests/ui-sdk
@@ -23,3 +24,4 @@ jobs:
         working-directory: tests/ui-sdk
       - run: npm run typecheck && npm run build && npm test
         working-directory: tests/ui-sdk
+      - run: node tests/verify-studio.cjs

@@ -280,6 +280,7 @@ function webPackageJson(withApi: boolean) {
       '@tanstack/router-cli': '^1.167.33',
       '@types/react': '^19.2.10',
       '@types/react-dom': '^19.2.0',
+      '@webgpu/types': '0.1.69',
       '@vitejs/plugin-react': '^6.1.0',
       'code-inspector-plugin': '^2.0.8',
       vite: '^8.2.2',

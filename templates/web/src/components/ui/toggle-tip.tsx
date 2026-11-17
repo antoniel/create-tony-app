@@ -33,6 +33,7 @@ export const ToggleTip = React.forwardRef<HTMLDivElement, ToggleTipProps>(
         <Portal disabled={!portalled} container={portalRef}>
           <ChakraPopover.Positioner>
             <ChakraPopover.Content
+              data-design-component="toggle-tip"
               width="auto"
               px="2"
               py="1"
@@ -63,7 +64,7 @@ export const InfoTip = React.forwardRef<HTMLDivElement, InfoTipProps>(function I
   const { children, buttonProps, ...rest } = props
   return (
     <ToggleTip content={children} {...rest} ref={ref}>
-      <IconButton variant="ghost" aria-label="info" size="2xs" colorPalette="gray" {...buttonProps}>
+      <IconButton data-design-component="toggle-tip" variant="ghost" aria-label="info" size="2xs" colorPalette="gray" {...buttonProps}>
         <HiOutlineInformationCircle />
       </IconButton>
     </ToggleTip>

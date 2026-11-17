@@ -8,4 +8,4 @@ export interface LinkButtonProps extends HTMLChakraProps<'a', RecipeProps<'butto
 const { withContext } = createRecipeContext({ key: 'button' })
 
 // Replace "a" with your framework's link component
-export const LinkButton = withContext<HTMLAnchorElement, LinkButtonProps>('a')
+export const LinkButton = withContext<HTMLAnchorElement, LinkButtonProps>('a', { defaultProps: { 'data-design-component': 'link-button' } })

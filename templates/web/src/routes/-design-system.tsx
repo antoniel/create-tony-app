@@ -1,8 +1,8 @@
 import { Box, Code, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import { DocsSection, PageIntro } from '../components/docs-section'
-import { brandSteps, defaultDraft } from '../theme/draft'
+import { brandSteps, draftFromSeed } from '../theme/draft'
+import { useDesign } from '../studio/design-provider'
 
-const brandScale = brandSteps.map((step) => [step, defaultDraft.brand[step]] as const)
 
 const semanticColors = [
   { token: 'app.bg', swatch: 'app.bg', note: 'chassis' },
@@ -51,6 +51,9 @@ const edges = [
 ] as const
 
 export function DesignSystemPage({ status }: { status?: string }) {
+  const { document } = useDesign()
+  const draft = draftFromSeed(document.seed)
+  const brandScale = brandSteps.map((step) => [step, draft.brand[step]] as const)
   return (
     <>
       <Stack gap="16">
