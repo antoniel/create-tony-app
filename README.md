@@ -53,3 +53,14 @@ Web projects also include nuqs for type-safe URL state. Its TanStack Router adap
 Generated web projects include a visual design-system editor at `/studio`: an infinite canvas with UI SDK pan/zoom, WebGPU connections (with a Canvas 2D fallback), atomic-design layers, real component previews, token/style editing, undo/redo and local persistence. Export theme tokens and component CSS to customize the next project. See [Design Studio](docs/design-studio.md).
 
 Generated projects include [Alchemy](https://alchemy.run/) configured for production on Cloudflare. The root `alchemy.run.ts` follows the selected tree: web and API deploy as Workers, and database deploys as D1. Run `bun run deploy:login`, `bun run deploy:plan`, then `bun run deploy`. Web receives the API URL during its build. Local development keeps Bun and SQLite; production applies the database package's SQL migrations to D1. The generated README covers setup and stages.
+
+## Run this repository locally
+
+```bash
+yarn install
+yarn dev
+```
+
+Open http://localhost:3000/studio. `yarn dev` starts the local app without the project-creation prompts. On the first run it prepares a web-only workspace at `.playground/studio`; later runs reuse it and preserve its files. Other playground projects are not deleted. Node 22+ and Bun are required for development.
+
+`yarn dev <folder>` starts an existing web playground under `.playground`. The existing playground-to-template file watcher remains active while the server runs; `src/command/create.ts` remains the source for generated package manifests. To create a separate new project interactively, use the published `bun create tony-app` CLI.
