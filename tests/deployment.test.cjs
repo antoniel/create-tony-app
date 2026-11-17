@@ -56,10 +56,13 @@ test("Native Shell scaffolds a standalone web runtime and keeps the selected Clo
     await generateProject(root, { projectName: "studio-nsh", features: ["web", "api", "database"], webRuntime: "nsh" });
     const web = path.join(root, "apps/web");
     const pkg = JSON.parse(await readFile(path.join(web, "package.json"), "utf8"));
-    assert.equal(pkg.scripts.dev, "nsh run --target web");
+    assert.equal(pkg.scripts.dev, "bun run build:host && nsh run --target web");
     assert.equal(pkg.scripts["dev:native"], "nsh run");
-    assert.equal(pkg.scripts.build, "nsh package --target web -o dist");
+    assert.equal(pkg.scripts.build, "bun run build:host && nsh package --target web -o dist");
     await access(path.join(web, "App.tsx"));
+    await access(path.join(web, "browser/host.tsx"));
+    await access(path.join(web, "browser/catalog/studio/registry.ts"));
+    await access(path.join(web, "browser/catalog/routes/components/-catalog.tsx"));
     await assert.rejects(access(path.join(web, "vite.config.ts")));
     await assert.rejects(access(path.join(web, ".nsh")));
     const stack = await readFile(path.join(root, "alchemy.run.ts"), "utf8");

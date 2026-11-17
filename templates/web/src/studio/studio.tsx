@@ -116,7 +116,7 @@ function NodeContent({ node }: { node: DesignNode }) {
   return <GalleryPagePreview />;
 }
 
-export function DesignStudio() {
+export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePath?: (node: DesignNode) => string } = {}) {
   const design = useDesign(),
     { document, update } = design;
   const [selected, setSelected] = useState<string | null>(null);
@@ -740,7 +740,7 @@ export function DesignStudio() {
           </section>
           <section>
             <h2>{picked?.label ?? "Select a component"}</h2>
-            <p>{picked?.source ?? "Pick a layer or a card on the canvas."}</p>
+            <p>{picked ? sourcePath(picked) : "Pick a layer or a card on the canvas."}</p>
             {picked?.component && (
               <>
                 <div className="studio-field-grid">

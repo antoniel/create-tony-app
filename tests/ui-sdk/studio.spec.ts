@@ -6,7 +6,8 @@ test.beforeEach(async ({ page }) => {
   errors.set(page, []);
   page.on("pageerror", (error) => errors.get(page)!.push(error.message));
   await page.route("https://**/*", (route) => route.abort());
-  await page.goto(`${origin}/studio`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${origin}${process.env.SDK_STUDIO_PATH ?? "/studio"}`, { waitUntil: "domcontentloaded" });
+  if (process.env.SDK_STUDIO_PATH === "/") await expect(page.locator('[data-nsh-studio]')).toHaveCount(1);
   await expect(page.locator(".studio-save")).toContainText("Saved locally");
   await expect(page.locator("[data-render-mode]")).not.toHaveText("Starting");
 });
@@ -39,6 +40,36 @@ test("renders all components, pans and zooms, selects and isolates a real compon
   );
   await page.getByRole("button", { name: "Show all", exact: true }).click();
   await expect(page.locator("[data-node]")).toHaveCount(70);
+});
+
+test("blank canvas stays pannable beyond the content and zooms under the pointer", async ({ page }) => {
+  const canvas = page.getByRole("region", { name: "Infinite design canvas" });
+  const world = page.locator(".studio-world");
+  const transform = () => world.evaluate((element) => {
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform);
+    return { x: matrix.e, y: matrix.f, zoom: matrix.a };
+  });
+  await canvas.focus();
+  for (let step = 0; step < 12; step++) await canvas.press("ArrowUp");
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error("Missing canvas bounds");
+  const offBoard = await transform();
+  expect(offBoard.y).toBeGreaterThan(box.height);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 50, { steps: 4 });
+  await page.mouse.up();
+  const moved = await transform();
+  expect(moved.x - offBoard.x).toBeCloseTo(80, 0);
+  expect(moved.y - offBoard.y).toBeCloseTo(50, 0);
+  await page.keyboard.down("Control");
+  try {
+    await page.mouse.wheel(0, -240);
+    await expect.poll(async () => (await transform()).zoom).toBeGreaterThan(moved.zoom);
+  } finally {
+    await page.keyboard.up("Control");
+  }
+  expect(await canvas.evaluate((element) => element.scrollTop)).toBe(0);
 });
 
 test("edits global tokens, undo/redo, persists across reload and exports validated backup", async ({

@@ -2,5 +2,7 @@
   "name": "Tony Studio",
   "id": "com.tony.studio",
   "version": "1.0.0",
-  "build": 1
+  "build": 1,
+  "capabilities": { "host": ["studio.mount"], "statusBar": true, "clipboard": true },
+  "web": { "host": "./.nsh/web-host.js" }
 }

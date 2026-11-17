@@ -44,13 +44,17 @@ async function main() {
   if (!['vite', 'nsh'].includes(values.runtime)) throw new Error('Choose --runtime vite or --runtime nsh.');
   if (values.runtime === 'nsh') {
     if (positionals.length) throw new Error('Run a generated NSH project with bun dev from its own workspace.');
-    const result = spawnSync('nsh', ['run', '--target', values.target ?? 'web'], {
-      cwd: path.join(root, 'templates/nsh'),
+    const target = values.target ?? 'web';
+    const installMessage = 'Install Native Shell from https://nsh.dev/docs/installation/ and add nsh to PATH.';
+    const version = spawnSync('nsh', ['--version']);
+    if (version.error?.code === 'ENOENT') throw new Error(installMessage);
+    if (version.error) throw version.error;
+
+    const cwd = target === 'web' ? await prepareNshWeb(root) : path.join(root, 'templates/nsh');
+    const result = spawnSync('nsh', ['run', '--target', target], {
+      cwd,
       stdio: 'inherit',
     });
-    if (result.error?.code === 'ENOENT') {
-      throw new Error('Install Native Shell from https://nsh.dev/docs/installation/ and add nsh to PATH.');
-    }
     if (result.error) throw result.error;
     process.exitCode = result.status ?? (result.signal === 'SIGINT' ? 0 : 1);
     return;
@@ -85,6 +89,25 @@ async function main() {
   dev.on('exit', (code) => { stopSync(); process.exitCode = stopping ? 0 : code ?? 1; });
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);
+}
+
+async function prepareNshWeb(root) {
+  const projectPath = path.join(root, '.playground/.nsh-web');
+  const marker = path.join(projectPath, '.tony-studio');
+  if (fs.existsSync(projectPath) && !fs.existsSync(marker)) {
+    throw new Error(`Move the existing folder out of ${projectPath} before starting NSH Web.`);
+  }
+  fs.mkdirSync(projectPath, { recursive: true });
+  fs.writeFileSync(marker, 'Managed by yarn dev --runtime nsh\n');
+  run(process.execPath, [require.resolve('typescript/bin/tsc'), '-p', 'tsconfig.json'], root);
+  const { generateProject } = require('../dist/command/create');
+  fs.rmSync(path.join(projectPath, '.gitignore'), { force: true });
+  await generateProject(projectPath, { projectName: 'studio-nsh', features: ['web'], webRuntime: 'nsh' });
+  const web = path.join(projectPath, 'apps/web');
+  fs.copyFileSync(path.join(root, 'templates/nsh/nsh.json'), path.join(web, 'nsh.json'));
+  run('bun', ['install'], projectPath);
+  run('bun', ['run', 'build:host'], web);
+  return web;
 }
 
 if (require.main === module) {

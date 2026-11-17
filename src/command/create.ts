@@ -89,6 +89,11 @@ export async function generateProject(projectPath: string, selection: ProjectSel
     await fs.copy(templatePath(template), destination, template === 'nsh' ? {
       filter: (source) => !['.nsh', '.npmignore', 'dist'].includes(path.basename(source)),
     } : {});
+    if (template === 'nsh') {
+      for (const source of ['components', 'lib/pages.ts', 'routes/components/-catalog.tsx', 'studio', 'theme']) {
+        await fs.copy(templatePath(`web/src/${source}`), path.join(destination, 'browser/catalog', source));
+      }
+    }
   }
 
   await writeRootPackageJson(projectPath, selection);
@@ -296,15 +301,41 @@ function nshPackageJson() {
     private: true,
     type: 'module',
     scripts: {
-      dev: 'nsh run --target web',
+      dev: 'bun run build:host && nsh run --target web',
       'dev:native': 'nsh run',
-      build: 'nsh package --target web -o dist',
-      lint: 'oxlint .',
-      typecheck: 'nsh check',
-      test: 'nsh test',
+      build: 'bun run build:host && nsh package --target web -o dist',
+      'build:host': 'vite build --config browser/vite.config.ts',
+      lint: 'oxlint *.ts *.tsx browser/host.tsx browser/vite.config.ts',
+      typecheck: 'nsh check && chakra typegen browser/catalog/theme/index.ts && tsc -p browser/tsconfig.json',
+      test: 'nsh test --web-host browser/headless-host.js',
+    },
+    dependencies: studioDependencies,
+    devDependencies: {
+      ...studioDevDependencies,
+      'vite': '^8.2.2',
+      '@vitejs/plugin-react': '^6.1.0',
     },
   };
 }
+
+const studioDependencies = {
+  '@chakra-ui/react': '^3.36.1',
+  '@ui-sdk/core': '0.1.0-beta.6',
+  '@ui-sdk/react': '0.1.0-beta.6',
+  '@phosphor-icons/react': '^2.1.10',
+  '@emotion/react': '^11.14.0',
+  '@tanstack/react-router': '^1.170.32',
+  react: '^19.2.0',
+  'react-dom': '^19.2.0',
+  'react-icons': '^5.5.0',
+};
+
+const studioDevDependencies = {
+  '@chakra-ui/cli': '^3.36.1',
+  '@types/react': '^19.2.10',
+  '@types/react-dom': '^19.2.0',
+  '@webgpu/types': '0.1.69',
+};
 
 function webPackageJson(withApi: boolean) {
   return {
@@ -322,32 +353,21 @@ function webPackageJson(withApi: boolean) {
     },
     dependencies: {
       ...(withApi ? { '@elysia/eden': '^1.4.10' } : {}),
-      '@chakra-ui/react': '^3.36.1',
-      '@ui-sdk/core': '0.1.0-beta.6',
-      '@ui-sdk/react': '0.1.0-beta.6',
-      '@phosphor-icons/react': '^2.1.10',
-      '@emotion/react': '^11.14.0',
+      ...studioDependencies,
       '@tanstack/react-query': '^5.102.8',
-      '@tanstack/react-router': '^1.170.32',
       '@tanstack/react-router-ssr-query': '^1.167.2',
       '@tanstack/react-start': '^1.168.49',
       nitro: '3.0.260610-beta',
       mesurer: '^0.1.0',
       'next-themes': '^0.4.6',
       nuqs: '^2.10.1',
-      react: '^19.2.0',
-      'react-dom': '^19.2.0',
-      'react-icons': '^5.5.0',
     },
     devDependencies: {
       ...(withApi
         ? { '@app/api': 'workspace:*', elysia: '^1.4.30' }
         : {}),
-      '@chakra-ui/cli': '^3.36.1',
+      ...studioDevDependencies,
       '@tanstack/router-cli': '^1.167.33',
-      '@types/react': '^19.2.10',
-      '@types/react-dom': '^19.2.0',
-      '@webgpu/types': '0.1.69',
       '@vitejs/plugin-react': '^6.1.0',
       'code-inspector-plugin': '^2.0.8',
       vite: '^8.2.2',

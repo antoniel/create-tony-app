@@ -52,7 +52,7 @@ Web projects also include nuqs for type-safe URL state. Its TanStack Router adap
 
 Vite projects include a visual design-system editor at `/studio`: an infinite canvas with UI SDK pan/zoom, WebGPU connections (with a Canvas 2D fallback), atomic-design layers, real component previews, token/style editing, undo/redo and local persistence. Export theme tokens and component CSS to customize the next project. See [Design Studio](docs/design-studio.md).
 
-NSH projects open the Studio at `/`. Their starter kit uses Native Shell controls for six interactive previews across atoms, molecules and organisms. The zoomable board draws the grid with NSH's shader renderer, with a Canvas fallback. The inspector edits brand and font tokens and component colors and radii. Copy the design as JSON into `apps/web/design-defaults.json` to ship it. See the [Native Shell template commands](templates/nsh/README.md).
+NSH Web opens the same infinite Studio at `/`, including the 67 interactive component previews, grouped layers, dependency graph, templates and pages. Native Shell serves and packages the app with the shared React and Chakra workspace bundled into its web host. See the [Native Shell template commands](templates/nsh/README.md).
 
 Generated projects include [Alchemy](https://alchemy.run/) configured for production on Cloudflare. Vite and API deploy as Workers, and database deploys as D1. A Vite build receives the API URL. An NSH build produces a static site in `apps/web/dist/Tony Studio` for a static host. Local development keeps Bun and SQLite, and production applies the database package's SQL migrations to D1. The generated README covers setup and stages.
 
@@ -67,4 +67,4 @@ Open http://localhost:3000/studio. `yarn dev` starts the local app without the p
 
 `yarn dev <folder>` starts an existing web playground under `.playground`. The existing playground-to-template file watcher remains active while the server runs; `src/command/create.ts` remains the source for generated package manifests. To create a separate new project interactively, use the published `bun create tony-app` CLI.
 
-With [Native Shell](https://nsh.dev/docs/installation/) on your PATH, use `yarn dev --runtime nsh` for the browser or `yarn dev --runtime nsh --target macos` for the Mac app. Open the URL printed by NSH. These commands run `templates/nsh` directly with hot reload. Use `yarn dev --runtime vite` to select Vite explicitly.
+With [Native Shell](https://nsh.dev/docs/installation/) on your PATH, run `yarn dev --runtime nsh` and open the URL printed by NSH. This command regenerates its managed workspace at `.playground/.nsh-web` and bundles the current Studio from the web template. Restart it after editing the templates. Use `yarn dev --runtime vite` to select Vite explicitly.
