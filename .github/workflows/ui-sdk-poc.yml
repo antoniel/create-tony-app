@@ -1,0 +1,25 @@
+name: UI SDK proof of concept
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      - run: node --test tests/generator-sdk.cjs
+      - run: node tests/verify-sdk-generated.cjs
+      - run: npm ci
+        working-directory: tests/ui-sdk
+      - run: npx playwright install --with-deps chromium firefox webkit
+        working-directory: tests/ui-sdk
+      - run: npm run typecheck && npm run build && npm test
+        working-directory: tests/ui-sdk

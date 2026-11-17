@@ -1,0 +1,25 @@
+{
+  "name": "tony-ui-sdk-evaluation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run prepare:fixture && playwright test",
+    "typecheck": "npm run prepare:fixture && tsc --noEmit",
+    "build": "npm run prepare:fixture && vite build",
+    "prepare:fixture": "node prepare-fixture.mjs"
+  },
+  "dependencies": {
+    "@ui-sdk/core": "0.1.0-beta.6",
+    "@ui-sdk/react": "0.1.0-beta.6",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.11.0",
+    "@playwright/test": "1.58.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3",
+    "vite": "7.3.1"
+  }
+}

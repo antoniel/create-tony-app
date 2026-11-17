@@ -1,6 +1,7 @@
 import { Box, HStack, Stack, Text, createListCollection, parseColor } from '@chakra-ui/react'
 import { Cube, MagnifyingGlass } from '@phosphor-icons/react/ssr'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { SdkFrameworkPicker, type Framework } from '../../components/ui/sdk-framework-picker'
 import {
   AccordionItem,
   AccordionItemContent,
@@ -358,20 +359,23 @@ const catalog = {
     ),
   },
   combobox: {
-    copy: 'type, then pick.',
+    copy: 'type, then pick. Compare Chakra with the UI SDK proof of concept.',
     preview: (
-      <ComboboxRoot collection={frameworks} width="56">
-        <ComboboxControl>
-          <ComboboxInput placeholder="search" />
-        </ComboboxControl>
-        <ComboboxContent>
-          {frameworks.items.map((item) => (
-            <ComboboxItem item={item} key={item.value}>
-              {item.label}
-            </ComboboxItem>
-          ))}
-        </ComboboxContent>
-      </ComboboxRoot>
+      <Stack gap="6">
+        <ComboboxRoot collection={frameworks} width="56">
+          <ComboboxControl>
+            <ComboboxInput placeholder="search" />
+          </ComboboxControl>
+          <ComboboxContent>
+            {frameworks.items.map((item) => (
+              <ComboboxItem item={item} key={item.value}>
+                {item.label}
+              </ComboboxItem>
+            ))}
+          </ComboboxContent>
+        </ComboboxRoot>
+        <SdkComboboxPreview />
+      </Stack>
     ),
   },
   'data-list': {
@@ -887,4 +891,9 @@ export function catalogEntry(index: ComponentIndex) {
 
 export function catalogPreview(index: ComponentIndex) {
   return catalog[index].preview
+}
+
+function SdkComboboxPreview() {
+  const [value, setValue] = useState<Framework | null>(null)
+  return <SdkFrameworkPicker value={value} onValueChange={setValue} />
 }

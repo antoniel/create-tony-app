@@ -64,7 +64,7 @@ async function askProjectSelection(projectName?: string): Promise<ProjectSelecti
   };
 }
 
-async function generateProject(projectPath: string, selection: ProjectSelection) {
+export async function generateProject(projectPath: string, selection: ProjectSelection) {
   await fs.ensureDir(projectPath);
   await fs.copy(templatePath('root'), projectPath);
 
@@ -200,7 +200,8 @@ async function writeConditionalFiles(projectPath: string, features: Feature[]) {
     await fs.remove(path.join(routesPath, selected.has('api') ? 'index.standalone.tsx' : 'index.with-api.tsx'));
 
     if (!selected.has('api')) {
-      await fs.remove(path.join(webSourcePath, 'lib'));
+      await fs.remove(path.join(webSourcePath, 'lib/api.ts'));
+      await fs.remove(path.join(webSourcePath, 'lib/eden.ts'));
       await fs.remove(path.join(webSourcePath, 'modules'));
     } else if (!selected.has('database')) {
       await fs.remove(path.join(webSourcePath, 'modules/users'));
@@ -255,6 +256,8 @@ function webPackageJson(withApi: boolean) {
     dependencies: {
       ...(withApi ? { '@elysia/eden': '^1.4.10' } : {}),
       '@chakra-ui/react': '^3.36.1',
+      '@ui-sdk/core': '0.1.0-beta.6',
+      '@ui-sdk/react': '0.1.0-beta.6',
       '@phosphor-icons/react': '^2.1.10',
       '@emotion/react': '^11.14.0',
       '@tanstack/react-query': '^5.102.8',
@@ -275,7 +278,7 @@ function webPackageJson(withApi: boolean) {
         : {}),
       '@chakra-ui/cli': '^3.36.1',
       '@tanstack/router-cli': '^1.167.33',
-      '@types/react': '^19.2.0',
+      '@types/react': '^19.2.10',
       '@types/react-dom': '^19.2.0',
       '@vitejs/plugin-react': '^6.1.0',
       'code-inspector-plugin': '^2.0.8',

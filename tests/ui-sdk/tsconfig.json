@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": false,
+    "esModuleInterop": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "baseUrl": ".",
+    "paths": {
+      "react": ["node_modules/@types/react"],
+      "react/*": ["node_modules/@types/react/*"],
+      "@ui-sdk/react/combobox": ["node_modules/@ui-sdk/react/dist/combobox.d.ts"]
+    },
+    "types": ["react"]
+  },
+  "include": [
+    "fixture.tsx",
+    "types.tsx",
+    "../../templates/web/src/components/ui/sdk-framework-picker.tsx"
+  ]
+}

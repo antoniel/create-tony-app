@@ -1,0 +1,46 @@
+.sdk-framework-picker {
+  display: grid;
+  gap: 0.5rem;
+  width: 18rem;
+  max-width: 100%;
+}
+.sdk-framework-control {
+  display: flex;
+  border: 1px solid var(--chakra-colors-border, #888);
+  border-radius: 0.25rem;
+}
+.sdk-framework-control input {
+  min-width: 0;
+  width: 100%;
+  padding: 0.5rem;
+  background: transparent;
+}
+.sdk-framework-control button {
+  padding: 0.5rem;
+}
+.sdk-framework-control :focus-visible {
+  outline: 2px solid var(--chakra-colors-fg, #333);
+  outline-offset: 2px;
+}
+.sdk-framework-popup {
+  background: var(--chakra-colors-bg, white);
+  color: var(--chakra-colors-fg, #171717);
+  border: 1px solid var(--chakra-colors-border, #888);
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  max-height: 16rem;
+  overflow: auto;
+}
+.sdk-framework-popup [role="option"] {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+.sdk-framework-popup [data-highlighted] {
+  background: var(--chakra-colors-bg-muted, #eee);
+  outline: 2px solid var(--chakra-colors-fg, #333);
+  outline-offset: -2px;
+}
+.sdk-framework-popup [data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
