@@ -16,7 +16,7 @@
     "dev": "node scripts/dev.js",
     "sync": "node scripts/sync-playground.js",
     "start": "tsc -p tsconfig.json --watch",
-    "test": "true",
+    "test": "npm run build && node --test tests/deployment.test.cjs",
     "release": "npm publish"
   },
   "files": [

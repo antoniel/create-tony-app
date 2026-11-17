@@ -7,3 +7,5 @@ packages/database/*.db
 packages/database/*.db-*
 .env
 .DS_Store
+.alchemy
+.wrangler

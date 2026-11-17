@@ -49,3 +49,5 @@ Web UI is a Chakra kit in `apps/web/src/components/ui` — one file per componen
 Web projects include [Code Inspector](https://inspector.fe-dev.cn/en/) in Vite. In `bun dev`, hold Option+Shift (Mac) or Alt+Shift (Windows) and click a DOM node to open the source file in the editor.
 
 Web projects also include nuqs for type-safe URL state. Its TanStack Router adapter is mounted in the shared provider.
+
+Generated projects include [Alchemy](https://alchemy.run/) configured for production on Cloudflare. The root `alchemy.run.ts` follows the selected tree: web and API deploy as Workers, and database deploys as D1. Run `bun run deploy:login`, `bun run deploy:plan`, then `bun run deploy`. Web receives the API URL during its build. Local development keeps Bun and SQLite; production applies the database package's SQL migrations to D1. The generated README covers setup and stages.
