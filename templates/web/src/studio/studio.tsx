@@ -117,7 +117,10 @@ function NodeContent({ node }: { node: DesignNode }) {
   return <GalleryPagePreview />;
 }
 
-export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePath?: (node: DesignNode) => string } = {}) {
+export function DesignStudio({
+  sourcePath = (node) => node.source,
+  motion = false,
+}: { sourcePath?: (node: DesignNode) => string; motion?: boolean } = {}) {
   const design = useDesign(),
     { document, update } = design;
   const [selected, setSelected] = useState<string | null>(null);
@@ -183,7 +186,7 @@ export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePat
     const surface = frame.current,
       host = sceneHost.current;
     if (!surface || !host) return;
-    const instance = studioViewport({ id: "studio-viewport", surface: () => surface });
+    const instance = studioViewport({ id: "studio-viewport", surface: () => surface, motion });
     viewport.current = instance;
     renderer.current = createSceneRenderer(host, setMode);
     let zoomTimer: ReturnType<typeof setTimeout> | undefined;
@@ -196,6 +199,7 @@ export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePat
       );
     });
     const wheel = (event: WheelEvent) => {
+      instance.api.cancelFit();
       if (
         event.target instanceof Element &&
         event.target.closest('[data-interactive="true"]') &&
@@ -216,7 +220,7 @@ export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePat
       renderer.current?.destroy();
       viewport.current = null;
     };
-  }, [draw]);
+  }, [draw, motion]);
   useEffect(() => {
     scene.current = {
       positions,
@@ -296,15 +300,12 @@ export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePat
       ...sizeOf(node.id, sizes),
     }));
     if (!boxes.length) return;
-    viewport.current?.api.viewport.fit(
-      {
-        left: Math.min(...boxes.map((p) => p.x)) - 30,
-        top: 0,
-        right: Math.max(...boxes.map((p) => p.x + p.width)) + 30,
-        bottom: Math.max(...boxes.map((p) => p.y + p.height)) + 30,
-      },
-      { padding: 32 },
-    );
+    viewport.current?.api.fitAll({
+      left: Math.min(...boxes.map((p) => p.x)) - 30,
+      top: 0,
+      right: Math.max(...boxes.map((p) => p.x + p.width)) + 30,
+      bottom: Math.max(...boxes.map((p) => p.y + p.height)) + 30,
+    });
   }
   function moveNode(event: React.PointerEvent<HTMLButtonElement>, node: DesignNode) {
     if (event.button !== 0) return;
@@ -549,6 +550,7 @@ export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePat
                 if (api) api.reveal(api.rectOf(card), { padding: 24 });
               }
             }}
+            onPointerDownCapture={() => viewport.current?.api.cancelFit()}
             onPointerDown={(event) => {
               if (event.target === event.currentTarget) {
                 event.currentTarget.focus();
@@ -568,7 +570,7 @@ export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePat
             }}
           >
             <div className="studio-scene" ref={sceneHost} />
-            <div className="studio-world" ref={world}>
+            <div className="studio-world" ref={world} data-isolated={isolated}>
               {levels.map((level, i) => (
                 <div
                   className="studio-column"

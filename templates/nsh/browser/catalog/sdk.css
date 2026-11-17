@@ -261,14 +261,28 @@
   border: 6px solid var(--sdk-focus);
   border-inline-end-color: var(--sdk-border);
 }
-.sdk-switch-thumb {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
+.sdk-switch-track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  width: 32px;
+  height: 18px;
+  padding: 2px;
+  border-radius: 999px;
   background: var(--sdk-border);
 }
-.sdk-switch[aria-checked='true'] .sdk-switch-thumb {
+.sdk-switch-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+}
+.sdk-switch[aria-checked='true'] .sdk-switch-track {
   background: var(--sdk-focus);
+}
+.sdk-switch[aria-checked='true'] .sdk-switch-thumb {
+  translate: 14px;
 }
 .sdk-star {
   color: #8c6110;

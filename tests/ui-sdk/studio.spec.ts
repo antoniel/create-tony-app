@@ -325,6 +325,62 @@ test("NSH Web previews use SDK keyboard behaviors and file input", async ({ page
   await expect(page.locator(".sdk-floating-positioner .sdk-popup")).toHaveAttribute("style", /translate: 8px/);
 });
 
+test("NSH Web animates deliberate actions and honors reduced motion", async ({ page }) => {
+  test.skip(process.env.SDK_STUDIO_PATH !== "/", "NSH Web motion");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const fit = page.getByRole("button", { name: "Fit all", exact: true });
+  const animated = await fit.evaluate(async (button: HTMLButtonElement) => {
+    const world = document.querySelector<HTMLElement>(".studio-world")!;
+    const before = world.style.transform;
+    button.click();
+    const immediately = world.style.transform;
+    const frames = [];
+    for (let index = 0; index < 6; index++) {
+      await new Promise(requestAnimationFrame);
+      frames.push(world.style.transform);
+    }
+    return { before, immediately, distinctFrames: new Set(frames).size };
+  });
+  expect(animated.immediately).toBe(animated.before);
+  expect(animated.distinctFrames).toBeGreaterThan(1);
+
+  const layers = page.getByRole("complementary", { name: "Layers" });
+  await layers.getByRole("button", { name: "drawer", exact: true }).click();
+  const openDrawer = page.locator('[data-node="drawer"]').getByRole("button", { name: "open", exact: true });
+  await openDrawer.click();
+  const drawer = page.getByRole("dialog", { name: "drawer", exact: true });
+  await expect(drawer).toHaveCSS("transition-property", "opacity, translate");
+  await drawer.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(drawer).toBeHidden();
+
+  const canceled = await fit.evaluate(async (button: HTMLButtonElement) => {
+    const canvas = document.querySelector<HTMLElement>(".studio-board")!;
+    const world = document.querySelector<HTMLElement>(".studio-world")!;
+    button.click();
+    await new Promise(requestAnimationFrame);
+    canvas.dispatchEvent(new WheelEvent("wheel", { deltaY: 80, cancelable: true }));
+    const stopped = world.style.transform;
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    return world.style.transform === stopped;
+  });
+  expect(canceled).toBe(true);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await layers.getByRole("button", { name: "drawer", exact: true }).click();
+  await openDrawer.click();
+  await expect(drawer).toHaveCSS("transition-duration", "0s");
+  await drawer.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(drawer).toBeHidden();
+  const immediate = await fit.evaluate((button: HTMLButtonElement) => {
+    const world = document.querySelector<HTMLElement>(".studio-world")!;
+    const before = world.style.transform;
+    button.click();
+    return world.style.transform !== before;
+  });
+  expect(immediate).toBe(true);
+});
+
 test("cards grow with their content and page nodes show real structure and navigation", async ({
   page,
 }) => {

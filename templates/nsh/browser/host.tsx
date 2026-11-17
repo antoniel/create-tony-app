@@ -20,6 +20,7 @@ import type { DesignNode } from './catalog/studio/registry'
 import studioStyles from './catalog/studio/studio.css?inline'
 import { DesignStudio } from './catalog/studio/studio'
 import catalogStyles from './catalog/sdk.css?inline'
+import motionStyles from './catalog/motion.css?inline'
 
 const sourceRoot = 'browser/catalog'
 
@@ -64,6 +65,7 @@ function createStudioRouter() {
       <DesignProvider>
         <style>{studioStyles}</style>
         <style>{catalogStyles}</style>
+        <style>{motionStyles}</style>
         <style>{componentStyles}</style>
         <Outlet />
       </DesignProvider>
@@ -72,7 +74,7 @@ function createStudioRouter() {
   const studio = createRoute({
     getParentRoute: () => root,
     path: '/',
-    component: () => <DesignStudio sourcePath={catalogSource} />,
+    component: () => <DesignStudio sourcePath={catalogSource} motion />,
   })
   const gallery = createRoute({
     getParentRoute: () => root,
