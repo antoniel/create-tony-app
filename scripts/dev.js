@@ -3,6 +3,7 @@
 const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const { parseArgs } = require('node:util');
 const { startPlaygroundSync } = require('./sync-playground');
 
 async function preparePlayground(root, projectName = 'studio') {
@@ -18,6 +19,9 @@ async function preparePlayground(root, projectName = 'studio') {
   if (!fs.existsSync(path.join(projectPath, 'apps/web/package.json'))) {
     throw new Error(`This folder is not a web playground: ${projectPath}. Its files were left untouched.`);
   }
+  if (fs.existsSync(path.join(projectPath, 'apps/web/nsh.json'))) {
+    throw new Error(`Run bun dev in this Native Shell workspace: ${projectPath}.`);
+  }
   return projectPath;
 }
 
@@ -29,7 +33,30 @@ function run(command, args, cwd) {
 
 async function main() {
   const root = path.resolve(__dirname, '..');
-  const projectName = process.argv.slice(2).filter((arg) => arg !== '--')[0] || 'studio';
+  const { values, positionals } = parseArgs({
+    args: process.argv.slice(2).filter((arg) => arg !== '--'),
+    allowPositionals: true,
+    options: {
+      runtime: { type: 'string', default: 'vite' },
+      target: { type: 'string' },
+    },
+  });
+  if (!['vite', 'nsh'].includes(values.runtime)) throw new Error('Choose --runtime vite or --runtime nsh.');
+  if (values.runtime === 'nsh') {
+    if (positionals.length) throw new Error('Run a generated NSH project with bun dev from its own workspace.');
+    const result = spawnSync('nsh', ['run', '--target', values.target ?? 'web'], {
+      cwd: path.join(root, 'templates/nsh'),
+      stdio: 'inherit',
+    });
+    if (result.error?.code === 'ENOENT') {
+      throw new Error('Install Native Shell from https://nsh.dev/docs/installation/ and add nsh to PATH.');
+    }
+    if (result.error) throw result.error;
+    process.exitCode = result.status ?? (result.signal === 'SIGINT' ? 0 : 1);
+    return;
+  }
+  if (values.target || positionals.length > 1) throw new Error('Use yarn dev [folder] for Vite.');
+  const [projectName = 'studio'] = positionals;
   run(process.execPath, [require.resolve('typescript/bin/tsc'), '-p', 'tsconfig.json'], root);
   const projectPath = await preparePlayground(root, projectName);
   run('bun', ['install'], projectPath);

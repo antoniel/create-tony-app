@@ -8,6 +8,7 @@
   "ignorePatterns": [
     "**/node_modules/**",
     "**/dist/**",
+    "**/.nsh/**",
     "**/.output/**",
     "**/routeTree.gen.ts",
     ".agent/**",

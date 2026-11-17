@@ -32,13 +32,13 @@ The interactive tree currently offers:
 
 The details panel follows the focused folder:
 
-- `apps/web` — TanStack Start · React Query · Chakra UI
+- `apps/web` — Vite with TanStack Start, React Query and Chakra UI, or [Native Shell](https://nsh.dev/) for web, desktop and mobile. Choose the runtime after selecting Web.
 - `apps/api` — Elysia · typed HTTP API
 - `packages/database` — Drizzle · SQLite
 
 Selecting `packages/database` adds an embedded SQLite database. Create prepares the file once, applies the starter `users` table, and writes a root `.env` from `.env.example`. Data lives in `packages/database/data.db` and does not need Docker. Use `bun run db:ensure`, `bun run db:generate`, `bun run db:migrate`, `bun run db:push`, and `bun run db:studio` for Drizzle. No seed command is generated.
 
-Every folder is optional. The generated integrations adapt to the selected tree: the API only imports the database package when both are selected. When web and API are selected together, the web app receives a fully typed Eden Treaty client inferred directly from the Elysia application.
+Every folder is optional. The generated integrations adapt to the selected tree: the API only imports the database package when both are selected. When Vite and API are selected together, the web app receives a fully typed Eden Treaty client inferred directly from the Elysia application.
 
 API features are organized as lightweight vertical modules with colocated `*.models.ts`, `*.service.ts`, `*.route.ts`, and `index.ts` files. The database-backed `users` module is only generated when both API and database are selected.
 
@@ -50,9 +50,11 @@ Web projects include [Code Inspector](https://inspector.fe-dev.cn/en/) in Vite. 
 
 Web projects also include nuqs for type-safe URL state. Its TanStack Router adapter is mounted in the shared provider.
 
-Generated web projects include a visual design-system editor at `/studio`: an infinite canvas with UI SDK pan/zoom, WebGPU connections (with a Canvas 2D fallback), atomic-design layers, real component previews, token/style editing, undo/redo and local persistence. Export theme tokens and component CSS to customize the next project. See [Design Studio](docs/design-studio.md).
+Vite projects include a visual design-system editor at `/studio`: an infinite canvas with UI SDK pan/zoom, WebGPU connections (with a Canvas 2D fallback), atomic-design layers, real component previews, token/style editing, undo/redo and local persistence. Export theme tokens and component CSS to customize the next project. See [Design Studio](docs/design-studio.md).
 
-Generated projects include [Alchemy](https://alchemy.run/) configured for production on Cloudflare. The root `alchemy.run.ts` follows the selected tree: web and API deploy as Workers, and database deploys as D1. Run `bun run deploy:login`, `bun run deploy:plan`, then `bun run deploy`. Web receives the API URL during its build. Local development keeps Bun and SQLite; production applies the database package's SQL migrations to D1. The generated README covers setup and stages.
+NSH projects open the Studio at `/`. Their starter kit uses Native Shell controls for six interactive previews across atoms, molecules and organisms. The zoomable board draws the grid with NSH's shader renderer, with a Canvas fallback. The inspector edits brand and font tokens and component colors and radii. Copy the design as JSON into `apps/web/design-defaults.json` to ship it. See the [Native Shell template commands](templates/nsh/README.md).
+
+Generated projects include [Alchemy](https://alchemy.run/) configured for production on Cloudflare. Vite and API deploy as Workers, and database deploys as D1. A Vite build receives the API URL. An NSH build produces a static site in `apps/web/dist/Tony Studio` for a static host. Local development keeps Bun and SQLite, and production applies the database package's SQL migrations to D1. The generated README covers setup and stages.
 
 ## Run this repository locally
 
@@ -64,3 +66,5 @@ yarn dev
 Open http://localhost:3000/studio. `yarn dev` starts the local app without the project-creation prompts. On the first run it prepares a web-only workspace at `.playground/studio`; later runs reuse it and preserve its files. Other playground projects are not deleted. Node 22+ and Bun are required for development.
 
 `yarn dev <folder>` starts an existing web playground under `.playground`. The existing playground-to-template file watcher remains active while the server runs; `src/command/create.ts` remains the source for generated package manifests. To create a separate new project interactively, use the published `bun create tony-app` CLI.
+
+With [Native Shell](https://nsh.dev/docs/installation/) on your PATH, use `yarn dev --runtime nsh` for the browser or `yarn dev --runtime nsh --target macos` for the Mac app. Open the URL printed by NSH. These commands run `templates/nsh` directly with hot reload. Use `yarn dev --runtime vite` to select Vite explicitly.

@@ -49,3 +49,25 @@ test("Cloudflare deployment follows all eight feature selections", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("Native Shell scaffolds a standalone web runtime and keeps the selected Cloudflare backend", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "tony-nsh-"));
+  try {
+    await generateProject(root, { projectName: "studio-nsh", features: ["web", "api", "database"], webRuntime: "nsh" });
+    const web = path.join(root, "apps/web");
+    const pkg = JSON.parse(await readFile(path.join(web, "package.json"), "utf8"));
+    assert.equal(pkg.scripts.dev, "nsh run --target web");
+    assert.equal(pkg.scripts["dev:native"], "nsh run");
+    assert.equal(pkg.scripts.build, "nsh package --target web -o dist");
+    await access(path.join(web, "App.tsx"));
+    await assert.rejects(access(path.join(web, "vite.config.ts")));
+    await assert.rejects(access(path.join(web, ".nsh")));
+    const stack = await readFile(path.join(root, "alchemy.run.ts"), "utf8");
+    assert.match(stack, /Cloudflare\.D1\.Database/);
+    assert.match(stack, /Cloudflare\.Worker\(/);
+    assert.doesNotMatch(stack, /Cloudflare\.Website\.Vite|VITE_API_URL/);
+    assert.match(await readFile(path.join(root, "README.md"), "utf8"), /Design Studio · Native Shell/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

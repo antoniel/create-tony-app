@@ -3,6 +3,7 @@
 node_modules
 dist
 .playground
+.nsh
 tester
 tester-react
 package-lock.json

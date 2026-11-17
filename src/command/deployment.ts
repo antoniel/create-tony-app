@@ -1,10 +1,11 @@
 import * as fs from "fs-extra";
 import path from "path";
 import type { Feature } from "./compose-tree";
+import type { WebRuntime } from "./create";
 
 export async function writeDeployment(
   projectPath: string,
-  selection: { projectName: string; features: Feature[] },
+  selection: { projectName: string; features: Feature[]; webRuntime?: WebRuntime },
 ) {
   const selected = new Set(selection.features);
   const resources: string[] = [];
@@ -23,7 +24,7 @@ export async function writeDeployment(
     });`);
     outputs.push("apiUrl: api.url");
   }
-  if (selected.has("web")) {
+  if (selected.has("web") && selection.webRuntime !== "nsh") {
     resources.push(`    const web = yield* Cloudflare.Website.Vite('Web', {
       rootDir: './apps/web',
       ${selected.has("api") ? "env: { VITE_API_URL: api.url.as<string>() }," : ""}

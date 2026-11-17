@@ -15,15 +15,11 @@ bun dev
 - `bun run format` — format with Oxfmt
 - `bun run typecheck` — type-check the workspace
 
-## Design Studio (web projects)
-
-Open `/studio` to browse the component hierarchy, pan/zoom, isolate components, and edit brand/accent/font tokens or component appearance. Changes save in your browser; Undo/Redo also covers moved and hidden nodes.
-
-Use Export to download a JSON backup, `design-tokens.ts` (replace `apps/web/src/theme/design-tokens.ts`), and `component-overrides.css` (replace `apps/web/src/studio/component-overrides.css`). Commit exported source files to make the design the default for new users. Reset design returns an existing local draft to the shipped defaults. This version edits appearance; it does not generate arbitrary JSX or native mobile widgets.
+<!-- studio -->
 
 ## Production (Cloudflare + Alchemy)
 
-The root `alchemy.run.ts` defines the selected resources with [Alchemy](https://alchemy.run/): a TanStack Start Worker for web, an Elysia Worker for API, and D1 for database. The web build receives the deployed API URL automatically. Alchemy and its provider packages are pinned together because the integration currently uses Alchemy v2 beta.
+The root `alchemy.run.ts` defines the selected resources with [Alchemy](https://alchemy.run/). It deploys the Elysia API to Workers, the database to D1, and a Vite frontend to Workers when those options are selected. A Vite build receives the deployed API URL automatically. Alchemy and its provider packages are pinned together because the integration currently uses Alchemy v2 beta.
 
 From the workspace root, connect your Cloudflare account and review the production plan:
 

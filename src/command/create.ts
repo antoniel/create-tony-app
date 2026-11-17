@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { Input } from 'enquirer';
+import { Input, prompt } from 'enquirer';
 import execa from 'execa';
 import * as fs from 'fs-extra';
 import ora from 'ora';
@@ -7,9 +7,12 @@ import path from 'path';
 import { writeDeployment } from './deployment';
 import { promptComposeTree, type Feature } from './compose-tree';
 
+export type WebRuntime = 'vite' | 'nsh';
+
 interface ProjectSelection {
   projectName: string;
   features: Feature[];
+  webRuntime?: WebRuntime;
 }
 
 export async function create(projectName?: string) {
@@ -42,7 +45,7 @@ export async function create(projectName?: string) {
     throw error;
   }
 
-  printNextSteps(selection.projectName, selection.features);
+  printNextSteps(selection);
 }
 
 async function askProjectSelection(projectName?: string): Promise<ProjectSelection> {
@@ -59,10 +62,19 @@ async function askProjectSelection(projectName?: string): Promise<ProjectSelecti
     throw new Error('Project name must contain letters or numbers.');
   }
 
-  return {
-    projectName: safeName,
-    features: await promptComposeTree(safeName),
-  };
+  const features = await promptComposeTree(safeName);
+  if (!features.includes('web')) return { projectName: safeName, features };
+
+  const { webRuntime }: { webRuntime: WebRuntime } = await prompt({
+    type: 'select',
+    name: 'webRuntime',
+    message: 'Web runtime',
+    choices: [
+      { name: 'vite', message: 'Vite · React + Chakra UI' },
+      { name: 'nsh', message: 'NSH · Native Shell for web and native' },
+    ],
+  });
+  return { projectName: safeName, features, webRuntime };
 }
 
 export async function generateProject(projectPath: string, selection: ProjectSelection) {
@@ -73,12 +85,15 @@ export async function generateProject(projectPath: string, selection: ProjectSel
     const destination = feature === 'database'
       ? path.join(projectPath, 'packages/database')
       : path.join(projectPath, `apps/${feature}`);
-    await fs.copy(templatePath(feature), destination);
+    const template = feature === 'web' && selection.webRuntime === 'nsh' ? 'nsh' : feature;
+    await fs.copy(templatePath(template), destination, template === 'nsh' ? {
+      filter: (source) => !['.nsh', '.npmignore', 'dist'].includes(path.basename(source)),
+    } : {});
   }
 
   await writeRootPackageJson(projectPath, selection);
   await writeFeaturePackageJson(projectPath, selection);
-  await writeConditionalFiles(projectPath, selection.features);
+  await writeConditionalFiles(projectPath, selection);
   await writeDeployment(projectPath, selection);
   await renameGitIgnoreFiles(projectPath);
 }
@@ -137,7 +152,7 @@ async function writeFeaturePackageJson(projectPath: string, selection: ProjectSe
   if (selected.has('web')) {
     await fs.outputJSON(
       path.join(projectPath, 'apps/web/package.json'),
-      webPackageJson(selected.has('api')),
+      selection.webRuntime === 'nsh' ? nshPackageJson() : webPackageJson(selected.has('api')),
       { spaces: 2 }
     );
   }
@@ -151,8 +166,16 @@ async function writeFeaturePackageJson(projectPath: string, selection: ProjectSe
   }
 }
 
-async function writeConditionalFiles(projectPath: string, features: Feature[]) {
+async function writeConditionalFiles(projectPath: string, { features, projectName, webRuntime }: ProjectSelection) {
   const selected = new Set(features);
+
+  if (selected.has('web')) {
+    const readme = path.join(projectPath, 'README.md');
+    const contents = await fs.readFile(readme, 'utf8');
+    const studio = await fs.readFile(templatePath(`${webRuntime === 'nsh' ? 'nsh' : 'web'}/README.md`), 'utf8');
+    await fs.writeFile(readme, contents.replace('<!-- studio -->', studio.trimEnd()));
+    await fs.remove(path.join(projectPath, 'apps/web/README.md'));
+  }
 
   if (selected.has('api') || selected.has('database')) {
     const envFile = rootEnvFile(selected.has('database'));
@@ -209,7 +232,14 @@ async function writeConditionalFiles(projectPath: string, features: Feature[]) {
     }
   }
 
-  if (selected.has('web')) {
+  if (selected.has('web') && webRuntime === 'nsh') {
+    const configPath = path.join(projectPath, 'apps/web/nsh.json');
+    const config = await fs.readJSON(configPath);
+    const identifier = projectName.replace(/[^a-z0-9]/g, '');
+    await fs.outputJSON(configPath, { ...config, id: `com.tony.app${identifier}` }, { spaces: 2 });
+  }
+
+  if (selected.has('web') && webRuntime !== 'nsh') {
     const source = selected.has('api') ? 'index.with-api.tsx' : 'index.standalone.tsx';
     const webSourcePath = path.join(projectPath, 'apps/web/src');
     const routesPath = path.join(webSourcePath, 'routes');
@@ -258,6 +288,22 @@ async function renameGitIgnoreFiles(projectPath: string) {
 
 function templatePath(name: string) {
   return path.resolve(__dirname, `../../templates/${name}`);
+}
+
+function nshPackageJson() {
+  return {
+    name: '@app/web',
+    private: true,
+    type: 'module',
+    scripts: {
+      dev: 'nsh run --target web',
+      'dev:native': 'nsh run',
+      build: 'nsh package --target web -o dist',
+      lint: 'oxlint .',
+      typecheck: 'nsh check',
+      test: 'nsh test',
+    },
+  };
 }
 
 function webPackageJson(withApi: boolean) {
@@ -373,14 +419,22 @@ function toPackageName(value: string) {
     .replace(/^-+|-+$/g, '');
 }
 
-function printNextSteps(projectName: string, features: Feature[]) {
+function printNextSteps({ projectName, features, webRuntime }: ProjectSelection) {
   console.log(`\n  ${chalk.dim('$')} cd ${projectName}`);
+  if (features.includes('web') && webRuntime === 'nsh') {
+    console.log('  Install Native Shell from https://nsh.dev/docs/installation/');
+  }
   console.log(`  ${chalk.dim('$')} bun dev`);
   if (features.includes('database')) {
     console.log(`\n  SQLite is ready in ${chalk.cyan('packages/database/data.db')}.`);
     console.log(`  Use ${chalk.cyan('bun run db:studio')} to browse it.`);
   }
-  console.log(`\n  Deploy to Cloudflare: ${chalk.cyan('bun run deploy:login')} then ${chalk.cyan('bun run deploy')}.`);
+  if (webRuntime === 'nsh') {
+    console.log(`\n  Package the website: ${chalk.cyan('bun run build')}.`);
+  }
+  if (webRuntime !== 'nsh' || features.some((feature) => feature !== 'web')) {
+    console.log(`\n  Deploy to Cloudflare: ${chalk.cyan('bun run deploy:login')} then ${chalk.cyan('bun run deploy')}.`);
+  }
   console.log();
 }
 

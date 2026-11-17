@@ -50,7 +50,7 @@ function buildTree(projectName: string): GroupNode {
             feature: 'web',
             label: 'web/',
             path: 'apps/web',
-            description: 'TanStack Start · React Query · Chakra UI',
+            description: 'Vite or Native Shell',
           },
           {
             kind: 'feature',
