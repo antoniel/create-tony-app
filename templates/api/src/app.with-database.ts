@@ -1,9 +1,7 @@
-import { cors } from '@elysiajs/cors'
-import { Elysia } from 'elysia'
-import { envSchema } from './env'
-import { healthRoute } from './modules/health'
-import { usersRoute } from './modules/users'
+import { db } from "@app/database";
+import { createApp } from "./create-app";
+import { createUsersService } from "./modules/users/users.service";
 
-export const app = new Elysia().env(envSchema).use(cors()).use(healthRoute).use(usersRoute)
+export const app = createApp(createUsersService(db));
 
-export type App = typeof app
+export type App = typeof app;

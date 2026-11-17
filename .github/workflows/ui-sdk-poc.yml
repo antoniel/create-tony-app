@@ -1,5 +1,7 @@
 name: Design studio and UI SDK
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 jobs:

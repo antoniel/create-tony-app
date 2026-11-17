@@ -51,3 +51,5 @@ Web projects include [Code Inspector](https://inspector.fe-dev.cn/en/) in Vite. 
 Web projects also include nuqs for type-safe URL state. Its TanStack Router adapter is mounted in the shared provider.
 
 Generated web projects include a visual design-system editor at `/studio`: an infinite canvas with UI SDK pan/zoom, WebGPU connections (with a Canvas 2D fallback), atomic-design layers, real component previews, token/style editing, undo/redo and local persistence. Export theme tokens and component CSS to customize the next project. See [Design Studio](docs/design-studio.md).
+
+Generated projects include [Alchemy](https://alchemy.run/) configured for production on Cloudflare. The root `alchemy.run.ts` follows the selected tree: web and API deploy as Workers, and database deploys as D1. Run `bun run deploy:login`, `bun run deploy:plan`, then `bun run deploy`. Web receives the API URL during its build. Local development keeps Bun and SQLite; production applies the database package's SQL migrations to D1. The generated README covers setup and stages.

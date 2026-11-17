@@ -4,6 +4,7 @@ import execa from 'execa';
 import * as fs from 'fs-extra';
 import ora from 'ora';
 import path from 'path';
+import { writeDeployment } from './deployment';
 import { promptComposeTree, type Feature } from './compose-tree';
 
 interface ProjectSelection {
@@ -78,6 +79,7 @@ export async function generateProject(projectPath: string, selection: ProjectSel
   await writeRootPackageJson(projectPath, selection);
   await writeFeaturePackageJson(projectPath, selection);
   await writeConditionalFiles(projectPath, selection.features);
+  await writeDeployment(projectPath, selection);
   await renameGitIgnoreFiles(projectPath);
 }
 
@@ -104,10 +106,20 @@ async function writeRootPackageJson(projectPath: string, selection: ProjectSelec
       lint: 'turbo lint',
       format: 'oxfmt --write .',
       'format:check': 'oxfmt --check .',
-      typecheck: 'turbo typecheck',
+      typecheck: 'turbo typecheck && tsc -p tsconfig.deploy.json',
       ...databaseScripts,
+      'deploy:login': 'alchemy profile edit --add Cloudflare',
+      'deploy:plan': 'TONY_CLOUDFLARE=1 alchemy plan --stage prod',
+      deploy: 'TONY_CLOUDFLARE=1 alchemy deploy --stage prod',
     },
     devDependencies: {
+      alchemy: '2.0.0-beta.87',
+      '@alchemy.run/cloudflare': '2.0.0-beta.87',
+      '@alchemy.run/frontend-frameworks': '2.0.0-beta.87',
+      effect: '^4.1.4',
+      '@effect/platform-bun': '^4.1.4',
+      '@effect/platform-node': '^4.1.4',
+      '@cloudflare/workers-types': '5.20261117.1',
       '@oxlint/plugins': '^1.80.0',
       '@types/bun': '^1.3.10',
       '@types/node': '^22.10.2',
@@ -185,7 +197,14 @@ async function writeConditionalFiles(projectPath: string, features: Feature[]) {
       )
     );
 
+    await fs.move(
+      path.join(apiSourcePath, selected.has('database') ? 'worker.with-database.ts' : 'worker.standalone.ts'),
+      path.join(apiSourcePath, 'worker.ts')
+    );
+    await fs.remove(path.join(apiSourcePath, selected.has('database') ? 'worker.standalone.ts' : 'worker.with-database.ts'));
+
     if (!selected.has('database')) {
+      await fs.remove(path.join(apiSourcePath, 'create-app.ts'));
       await fs.remove(path.join(apiSourcePath, 'modules/users'));
     }
   }
@@ -216,6 +235,8 @@ async function appendDatabaseReadme(projectPath: string) {
 ## Database
 
 The workspace uses SQLite through Bun's built-in driver. Create prepares the database file and starter \`users\` table, and the same file opens whenever the API imports \`@app/database\`. Point \`DATABASE_URL\` in the root \`.env\` at \`packages/database/data.db\`.
+
+Production uses Cloudflare D1 through the \`DB\` Worker binding. Local SQLite data is separate from production. Alchemy applies SQL migrations from \`packages/database/drizzle\` on deploy. Generate and commit migrations after schema changes; \`db:push\` only changes the local database.
 
 Run Drizzle from the workspace root:
 
@@ -315,13 +336,13 @@ function databasePackageJson() {
     name: '@app/database',
     private: true,
     type: 'module',
-    exports: { '.': './src/index.ts', './schema': './src/schema.ts' },
+    exports: { '.': './src/index.ts', './schema': './src/schema.ts', './cloudflare': './src/cloudflare.ts' },
     scripts: {
       build: 'bun build src/index.ts --target bun --outdir dist',
       lint: 'oxlint .',
       typecheck: 'tsc --noEmit',
       'db:ensure': 'bun --env-file=../../.env src/index.ts',
-      'db:generate': 'bun --env-file=../../.env x drizzle-kit generate',
+      'db:generate': 'bun --env-file=../../.env x drizzle-kit generate --config drizzle.cloudflare.config.ts',
       'db:migrate': 'bun --env-file=../../.env x drizzle-kit migrate',
       'db:push': 'bun --env-file=../../.env x drizzle-kit push',
       'db:studio': 'bun --env-file=../../.env x drizzle-kit studio',
@@ -331,6 +352,7 @@ function databasePackageJson() {
     },
     devDependencies: {
       'drizzle-kit': '^0.31.10',
+      '@libsql/client': '^0.18.0',
     },
   };
 }
@@ -358,6 +380,7 @@ function printNextSteps(projectName: string, features: Feature[]) {
     console.log(`\n  SQLite is ready in ${chalk.cyan('packages/database/data.db')}.`);
     console.log(`  Use ${chalk.cyan('bun run db:studio')} to browse it.`);
   }
+  console.log(`\n  Deploy to Cloudflare: ${chalk.cyan('bun run deploy:login')} then ${chalk.cyan('bun run deploy')}.`);
   console.log();
 }
 
