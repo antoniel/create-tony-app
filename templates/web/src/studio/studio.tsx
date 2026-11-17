@@ -9,6 +9,7 @@ import { brandSteps, draftFromSeed } from "../theme/draft";
 import { useDesign } from "./design-provider";
 import {
   appearanceCSS,
+  designSurface,
   fontStack,
   initialAppearance,
   initialDocument,
@@ -249,7 +250,7 @@ export function DesignStudio({ sourcePath = (node) => node.source }: { sourcePat
   }, [design.undo, design.redo]);
   useEffect(() => {
     const element = world.current?.querySelector(
-      `[data-node="${selected}"] [data-design-component] :is(button,input,textarea,select,[data-part="root"])`,
+      `[data-node="${selected}"] [data-design-component] ${designSurface}`,
     );
     if (!element) {
       setMeasured(initialAppearance);

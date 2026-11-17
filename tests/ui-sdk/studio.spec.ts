@@ -284,6 +284,47 @@ test("layers have collapsible functional clusters and search reveals their membe
   await expect(page.locator('[data-cluster="Atoms-Actions"]')).toHaveCount(1);
 });
 
+test("NSH Web previews use SDK keyboard behaviors and file input", async ({ page }) => {
+  test.skip(process.env.SDK_STUDIO_PATH !== "/", "NSH Web catalog");
+  const layers = page.getByRole("complementary", { name: "Layers" });
+  const selectCard = async (id: string) => {
+    await layers.getByRole("button", { name: id.replaceAll("-", " "), exact: true }).click();
+    return page.locator(`[data-node="${id}"]`);
+  };
+
+  const combobox = (await selectCard("combobox")).getByRole("combobox", { name: "Framework" });
+  await combobox.fill("vu");
+  await expect(page.getByRole("option", { name: "Vue" })).toBeVisible();
+  await expect(page.getByRole("option", { name: "React" })).toHaveCount(0);
+  await combobox.press("ArrowDown");
+  await combobox.press("Enter");
+  await expect(combobox).toHaveValue("Vue");
+
+  const slider = (await selectCard("slider")).getByRole("slider", { name: "Volume" });
+  await slider.press("ArrowRight");
+  await expect(slider).toHaveValue("46");
+
+  const tabs = await selectCard("tabs");
+  await tabs.getByRole("tab", { name: "Overview" }).press("ArrowRight");
+  await expect(tabs.getByRole("tab", { name: "History" })).toHaveAttribute("aria-selected", "true");
+  await expect(tabs.getByRole("tabpanel")).toContainText("Latest updates");
+
+  const files = await selectCard("file-upload");
+  await files.locator('input[type="file"]').setInputFiles({
+    name: "design-notes.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("Design notes"),
+  });
+  await expect(files.getByText("design-notes.txt", { exact: true })).toBeVisible();
+  await files.getByRole("button", { name: "Remove design-notes.txt" }).click();
+  await expect(files.getByText("design-notes.txt", { exact: true })).toHaveCount(0);
+
+  const panel = await selectCard("floating-panel");
+  await panel.getByRole("button", { name: "Options panel" }).click();
+  await page.getByRole("button", { name: "Reposition options panel" }).press("Alt+ArrowRight");
+  await expect(page.locator(".sdk-floating-positioner .sdk-popup")).toHaveAttribute("style", /translate: 8px/);
+});
+
 test("cards grow with their content and page nodes show real structure and navigation", async ({
   page,
 }) => {

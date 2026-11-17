@@ -102,6 +102,7 @@ async function prepareNshWeb(root) {
   run(process.execPath, [require.resolve('typescript/bin/tsc'), '-p', 'tsconfig.json'], root);
   const { generateProject } = require('../dist/command/create');
   fs.rmSync(path.join(projectPath, '.gitignore'), { force: true });
+  fs.rmSync(path.join(projectPath, 'apps/web/browser/catalog'), { force: true, recursive: true });
   await generateProject(projectPath, { projectName: 'studio-nsh', features: ['web'], webRuntime: 'nsh' });
   const web = path.join(projectPath, 'apps/web');
   fs.copyFileSync(path.join(root, 'templates/nsh/nsh.json'), path.join(web, 'nsh.json'));

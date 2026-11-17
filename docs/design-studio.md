@@ -1,6 +1,6 @@
 # Design Studio
 
-The generated web template now includes `/studio`: a desktop-first, infinite workspace for changing a new project's design language. This builds on the UI SDK evaluation, with a concrete use for its viewport behavior. The existing component kit still uses Chakra; the editor's gestures and action buttons use UI SDK. This is an incremental integration, not a completed replacement of all 67 components.
+The generated Vite template includes `/studio`, and the Native Shell Web template opens the Studio at `/`. Both use UI SDK for viewport gestures and editor actions. Vite previews use the Chakra kit. NSH Web previews use a 67-component kit built with UI SDK primitives and semantic HTML. Both runtimes use the same node IDs, atomic levels and functional groups.
 
 ## Working in the studio
 
@@ -25,7 +25,7 @@ The browser does not silently write source files. Export provides separate downl
 2. **Tokens (.ts)** replaces `apps/web/src/theme/design-tokens.ts`. The generated provider already reads its `projectDraft`. This is the shipped default for a fresh browser; an existing local draft remains an explicit override. Use Reset design to return to the shipped default.
 3. **Component styles (.css)** replaces `apps/web/src/studio/component-overrides.css`, which is already imported globally. Commit it with the token file.
 
-Component overrides use Chakra component classes and `data-design-component` boundaries. Catalog previews and isolated pages have boundaries; shared close-button, link-button and toggle-tip surfaces are also tagged so changes propagate into their consumers and portalled content. A new custom component should expose a stable boundary on its styled root. Complex components can later add semantic controls to the inspector rather than relying on generic surface CSS. Active local overrides take precedence over the exported stylesheet.
+Component overrides use `data-design-component` boundaries and the Vite kit's Chakra classes. Catalog previews and isolated pages have boundaries. Shared atoms such as Close Button are tagged where they are reused, including in portalled content. Use `data-design-surface` to expose a styled element to the inspector. Active local overrides take precedence over the exported stylesheet.
 
 ## Rendering and UI SDK
 

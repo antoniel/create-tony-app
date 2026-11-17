@@ -51,6 +51,7 @@ export const initialAppearance: Appearance = {
 export const storageKey = "tony.design-studio.v1";
 export const cardWidth = 320;
 export const cardHeight = 280;
+export const designSurface = ':is(button,input,textarea,select,[data-scope][data-part="root"],[data-design-surface])';
 export function isHex(value: unknown): value is string {
   return typeof value === "string" && /^#[\da-f]{6}$/i.test(value);
 }
@@ -153,7 +154,7 @@ export function appearanceCSS(appearance: StudioDocument["appearance"]) {
         .join(" ");
       // Validated IDs and hex/numeric values only; no arbitrary CSS or code evaluation.
       return [
-        `.chakra-${id}, .chakra-${id}__root, [data-design-component="${id}"], [data-design-component="${id}"] :is(button,input,textarea,select,[data-scope][data-part="root"]) { ${declarations} }`,
+        `.chakra-${id}, .chakra-${id}__root, [data-design-component="${id}"], [data-design-component="${id}"] ${designSurface} { ${declarations} }`,
       ];
     })
     .join("\n");

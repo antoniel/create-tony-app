@@ -44,7 +44,7 @@ API features are organized as lightweight vertical modules with colocated `*.mod
 
 Matching web modules expose React Query options from `*.service.ts` files. Request, response, and error types are inferred from Eden Treaty with `Parameters`, `Treaty.Data`, and `Treaty.Error`, so the frontend does not duplicate API contracts.
 
-Web UI is a Chakra kit in `apps/web/src/components/ui` — one file per component, with the look in that file. `/components` is the gallery. The Chakra system in `apps/web/src/theme` stays behind the scenes.
+Vite's UI kit uses Chakra and lives in `apps/web/src/components/ui`. The NSH Web kit uses UI SDK primitives and semantic HTML in `apps/web/browser/catalog/components/ui`. Each kit has one source file per component and a component gallery.
 
 Web projects include [Code Inspector](https://inspector.fe-dev.cn/en/) in Vite. In `bun dev`, hold Option+Shift (Mac) or Alt+Shift (Windows) and click a DOM node to open the source file in the editor.
 
@@ -52,7 +52,7 @@ Web projects also include nuqs for type-safe URL state. Its TanStack Router adap
 
 Vite projects include a visual design-system editor at `/studio`: an infinite canvas with UI SDK pan/zoom, WebGPU connections (with a Canvas 2D fallback), atomic-design layers, real component previews, token/style editing, undo/redo and local persistence. Export theme tokens and component CSS to customize the next project. See [Design Studio](docs/design-studio.md).
 
-NSH Web opens the same infinite Studio at `/`, including the 67 interactive component previews, grouped layers, dependency graph, templates and pages. Native Shell serves and packages the app with the shared React and Chakra workspace bundled into its web host. See the [Native Shell template commands](templates/nsh/README.md).
+NSH Web opens the infinite Studio at `/` with 70 nodes: 67 component previews, design tokens, a template, and a gallery page. The Native Shell web host uses the [Vercel UI SDK](https://ui-sdk.dev/) for canvas navigation and component interactions. It shares the renderer, layout and editor with the Vite template. See the [Native Shell template commands](templates/nsh/README.md).
 
 Generated projects include [Alchemy](https://alchemy.run/) configured for production on Cloudflare. Vite and API deploy as Workers, and database deploys as D1. A Vite build receives the API URL. An NSH build produces a static site in `apps/web/dist/Tony Studio` for a static host. Local development keeps Bun and SQLite, and production applies the database package's SQL migrations to D1. The generated README covers setup and stages.
 

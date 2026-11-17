@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { mkdtemp, readFile, access, rm } = require("node:fs/promises");
+const { mkdtemp, readFile, readdir, access, rm } = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
 const { test } = require("node:test");
@@ -59,10 +59,16 @@ test("Native Shell scaffolds a standalone web runtime and keeps the selected Clo
     assert.equal(pkg.scripts.dev, "bun run build:host && nsh run --target web");
     assert.equal(pkg.scripts["dev:native"], "nsh run");
     assert.equal(pkg.scripts.build, "bun run build:host && nsh package --target web -o dist");
+    assert.equal(pkg.dependencies["@ui-sdk/react"], pkg.dependencies["@ui-sdk/core"]);
+    assert.equal(pkg.dependencies["@chakra-ui/react"], undefined);
+    assert.equal(pkg.devDependencies["@chakra-ui/cli"], undefined);
     await access(path.join(web, "App.tsx"));
     await access(path.join(web, "browser/host.tsx"));
     await access(path.join(web, "browser/catalog/studio/registry.ts"));
     await access(path.join(web, "browser/catalog/routes/components/-catalog.tsx"));
+    const cards = await readdir(path.join(web, "browser/catalog/components/ui"));
+    assert.equal(cards.filter((file) => file.endsWith(".tsx")).length, 67);
+    assert.match(await readFile(path.join(web, "browser/catalog/components/ui/drawer.tsx"), "utf8"), /@ui-sdk\/react\/drawer/);
     await assert.rejects(access(path.join(web, "vite.config.ts")));
     await assert.rejects(access(path.join(web, ".nsh")));
     const stack = await readFile(path.join(root, "alchemy.run.ts"), "utf8");

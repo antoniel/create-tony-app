@@ -1,4 +1,3 @@
-import { Box, HStack } from '@chakra-ui/react'
 import {
   createHashHistory,
   createRootRoute,
@@ -13,14 +12,14 @@ import type { ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Design } from '../design'
 import { ComponentCollection, ComponentDetail } from './catalog/components/catalog-pages'
-import { PagePager } from './catalog/components/page-pager'
-import { componentPager, isComponentIndex } from './catalog/lib/pages'
+import { isComponentIndex } from './catalog/lib/pages'
 import componentStyles from './catalog/studio/component-overrides.css?inline'
 import { DesignProvider } from './catalog/studio/design-provider'
 import { initialDocument, parseDocument, storageKey } from './catalog/studio/model'
 import type { DesignNode } from './catalog/studio/registry'
 import studioStyles from './catalog/studio/studio.css?inline'
 import { DesignStudio } from './catalog/studio/studio'
+import catalogStyles from './catalog/sdk.css?inline'
 
 const sourceRoot = 'browser/catalog'
 
@@ -64,6 +63,7 @@ function createStudioRouter() {
     component: () => (
       <DesignProvider>
         <style>{studioStyles}</style>
+        <style>{catalogStyles}</style>
         <style>{componentStyles}</style>
         <Outlet />
       </DesignProvider>
@@ -79,7 +79,7 @@ function createStudioRouter() {
     path: '/components',
     component: () => (
       <CatalogFrame>
-        <ComponentCollection sourceRoot={sourceRoot} />
+        <ComponentCollection />
       </CatalogFrame>
     ),
   })
@@ -92,8 +92,7 @@ function createStudioRouter() {
     },
     component: () => (
       <CatalogFrame>
-        <ComponentDetail index={detail.useLoaderData()} sourceRoot={sourceRoot} />
-        {PagePager(componentPager)}
+        <ComponentDetail index={detail.useLoaderData()} />
       </CatalogFrame>
     ),
   })
@@ -127,13 +126,13 @@ function restoreDraft(legacy: Design | null) {
 
 function CatalogFrame({ children }: { children: ReactNode }) {
   return (
-    <Box as="main" maxW="80rem" mx="auto" px={{ base: '4', md: '8' }} py="8">
-      <HStack as="nav" aria-label="Design workspace" mb="8" gap="6">
+    <main className="sdk-catalog">
+      <nav className="sdk-row" aria-label="Design workspace">
         <Link to="/">Design studio</Link>
         <Link to="/components">Component gallery</Link>
-      </HStack>
+      </nav>
       {children}
-    </Box>
+    </main>
   )
 }
 
